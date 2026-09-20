@@ -69,7 +69,7 @@ app.post("/api/rank", async (req, res) => {
   try {
     const results = await Promise.all(tasks.map((task) => judgeTask(task, context)));
     results.sort((a, b) => b.score - a.score);
-    res.json({ results });
+    res.json({ results, levels: PRIORITY_LEVELS, scoreMax: PRIORITY_LEVELS.length - 1 });
   } catch (error) {
     console.error(error);
     res.status(502).json({ error: "Jev API の呼び出しに失敗しました。" });

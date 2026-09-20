@@ -3,284 +3,1255 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>今、何やる？</title>
+    <title>今、何やる？ — 状況まで考えるタスク優先順位アプリ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      /* ============================================================
+         Layer 1: Primitive tokens — 生の値。直接使わない
+         ============================================================ */
       :root {
-        --bg: #f5f5f7;
-        --card: #ffffff;
-        --line: #e2e2e7;
-        --text: #1c1c1e;
-        --muted: #6b6b73;
-        --accent: #ff6b35;
+        /* Teal（プロダクトの基調色） */
+        --teal-50: #f0fdfa;
+        --teal-100: #ccfbf1;
+        --teal-200: #99f6e4;
+        --teal-300: #5eead4;
+        --teal-400: #2dd4bf;
+        --teal-500: #14b8a6;
+        --teal-600: #0d9488;
+        --teal-700: #0f766e;
+        --teal-800: #115e59;
+        --teal-900: #134e4a;
+
+        /* Orange（行動・緊急） */
+        --orange-50: #fff7ed;
+        --orange-100: #ffedd5;
+        --orange-300: #fdba74;
+        --orange-400: #fb923c;
+        --orange-700: #c2410c;
+        --orange-800: #9a3412;
+
+        /* Amber / Slate / Status */
+        --amber-300: #fcd34d;
+        --amber-700: #b45309;
+        --slate-50: #f8fafc;
+        --slate-200: #e2e8f0;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --green-50: #f0fdf4;
+        --green-400: #4ade80;
+        --green-600: #16a34a;
+        --red-400: #f87171;
+        --red-600: #dc2626;
+        --white: #ffffff;
+
+        /* Spacing（4pxベース） */
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+
+        /* Typography */
+        --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+        --font-size-xs: 0.75rem;
+        --font-size-sm: 0.875rem;
+        --font-size-base: 1rem;
+        --font-size-lg: 1.125rem;
+        --font-size-xl: 1.25rem;
+        --font-size-2xl: 1.5rem;
+        --font-weight-medium: 500;
+        --font-weight-semibold: 600;
+        --font-weight-bold: 700;
+        --font-weight-extrabold: 800;
+        --leading-tight: 1.25;
+        --leading-normal: 1.6;
+        --tracking-tight: -0.02em;
+
+        /* Radius / Border / Motion */
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-full: 999px;
+        --border-1: 1px;
+        --border-2: 2px;
+        --duration-fast: 150ms;
+        --duration-normal: 200ms;
+        --ease: ease-out;
       }
+
+      /* ============================================================
+         Layer 2: Semantic tokens — 役割で参照する
+         ============================================================ */
+      :root {
+        --color-background: var(--teal-50);
+        --color-foreground: var(--teal-900);
+        --color-card: var(--white);
+        --color-card-foreground: var(--teal-900);
+        --color-muted: #e8f1f4;
+        --color-muted-foreground: var(--slate-600);
+
+        --color-border: var(--teal-200);
+        --color-input-border: var(--slate-500);
+
+        --color-primary: var(--teal-700);
+        --color-primary-hover: var(--teal-800);
+        --color-primary-foreground: var(--white);
+        --color-primary-surface: var(--teal-100);
+
+        --color-accent: var(--orange-700);
+        --color-accent-hover: var(--orange-800);
+        --color-accent-foreground: var(--white);
+        --color-accent-surface: var(--orange-50);
+
+        --color-success: var(--green-600);
+        --color-success-surface: var(--green-50);
+        --color-destructive: var(--red-600);
+        --color-ring: var(--teal-600);
+
+        /* 優先度レベル 0-3（色だけに依存させず、常にテキストも併記する） */
+        --level-0: var(--slate-500);
+        --level-1: var(--teal-700);
+        --level-2: var(--amber-700);
+        --level-3: var(--orange-700);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-background: #0b1211;
+          --color-foreground: #e8f6f3;
+          --color-card: #13201f;
+          --color-card-foreground: #e8f6f3;
+          --color-muted: #1b2b29;
+          --color-muted-foreground: #9fbdb7;
+
+          --color-border: #24403c;
+          --color-input-border: var(--slate-400);
+
+          --color-primary: var(--teal-400);
+          --color-primary-hover: var(--teal-300);
+          --color-primary-foreground: #04211f;
+          --color-primary-surface: #14332f;
+
+          --color-accent: var(--orange-400);
+          --color-accent-hover: var(--orange-300);
+          --color-accent-foreground: #2a1206;
+          --color-accent-surface: #2a1b10;
+
+          --color-success: var(--green-400);
+          --color-success-surface: #12301e;
+          --color-destructive: var(--red-400);
+          --color-ring: var(--teal-400);
+
+          --level-0: var(--slate-400);
+          --level-1: var(--teal-300);
+          --level-2: var(--amber-300);
+          --level-3: var(--orange-300);
+        }
+      }
+
+      /* ============================================================
+         Layer 3: Component tokens
+         ============================================================ */
+      :root {
+        --control-height: 44px;
+        --card-padding: var(--space-5);
+        --panel-padding: var(--space-5);
+        --chip-height: 28px;
+        --icon-size: 18px;
+      }
+
+      /* ============================================================
+         Base
+         ============================================================ */
       * {
         box-sizing: border-box;
       }
+
+      html,
+      body {
+        overflow-x: hidden;
+      }
+
       body {
         margin: 0;
-        padding: 24px 16px 64px;
-        background: var(--bg);
-        color: var(--text);
-        font-family: system-ui, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
-        line-height: 1.6;
+        padding: 0 var(--space-4) var(--space-12);
+        background: var(--color-background);
+        color: var(--color-foreground);
+        font-family: var(--font-sans);
+        font-size: var(--font-size-base);
+        line-height: var(--leading-normal);
+        -webkit-font-smoothing: antialiased;
       }
-      main {
-        max-width: 760px;
-        margin: 0 auto;
-        display: grid;
-        gap: 20px;
-      }
-      h1 {
+
+      h1,
+      h2,
+      h3 {
         margin: 0;
-        font-size: 24px;
+        line-height: var(--leading-tight);
+        letter-spacing: var(--tracking-tight);
       }
-      h1 + p {
-        margin: 4px 0 0;
-        color: var(--muted);
-        font-size: 14px;
+
+      p {
+        margin: 0;
       }
-      section {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 16px;
+
+      .app {
+        max-width: 1200px;
+        margin: 0 auto;
       }
-      h2 {
-        margin: 0 0 12px;
-        font-size: 15px;
-        letter-spacing: 0.04em;
-        color: var(--muted);
+
+      .icon {
+        width: var(--icon-size);
+        height: var(--icon-size);
+        flex: none;
+        display: inline-block;
+        vertical-align: -0.18em;
       }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 10px;
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
       }
-      label {
-        display: grid;
-        gap: 4px;
-        font-size: 12px;
-        color: var(--muted);
+
+      :focus-visible {
+        outline: var(--border-2) solid var(--color-ring);
+        outline-offset: 2px;
       }
-      input,
-      select,
-      textarea {
-        font: inherit;
-        font-size: 14px;
-        padding: 7px 9px;
-        border: 1px solid var(--line);
-        border-radius: 7px;
-        background: #fff;
-        color: inherit;
-        width: 100%;
-      }
-      button {
-        font: inherit;
-        font-size: 14px;
-        padding: 8px 14px;
-        border: 1px solid var(--line);
-        border-radius: 7px;
-        background: #fff;
-        cursor: pointer;
-      }
-      button:hover {
-        background: #f0f0f3;
-      }
-      button.primary {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #fff;
-        font-weight: 600;
-      }
-      button.primary:hover {
-        opacity: 0.9;
-      }
-      button.primary:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-      .row {
+
+      /* ============================================================
+         Masthead
+         ============================================================ */
+      .masthead {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
         align-items: center;
-        margin-top: 12px;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-6) 0 var(--space-5);
       }
-      .checkbox {
+
+      .brand {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        color: var(--text);
+        gap: var(--space-3);
+        min-width: 0;
       }
-      .checkbox input {
-        width: auto;
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        flex: none;
+        border-radius: var(--radius-md);
+        background: var(--color-primary);
+        color: var(--color-primary-foreground);
       }
-      ul {
+
+      .brand-mark .icon {
+        --icon-size: 24px;
+      }
+
+      .brand h1 {
+        font-size: clamp(var(--font-size-xl), 3vw, var(--font-size-2xl));
+        font-weight: var(--font-weight-extrabold);
+      }
+
+      .tagline {
+        font-size: var(--font-size-sm);
+        color: var(--color-muted-foreground);
+      }
+
+      .tagline b {
+        color: var(--color-foreground);
+        font-weight: var(--font-weight-semibold);
+      }
+
+      .powered {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        height: var(--chip-height);
+        padding: 0 var(--space-3);
+        border: var(--border-1) solid var(--color-primary);
+        border-radius: var(--radius-full);
+        color: var(--color-primary);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        white-space: nowrap;
+      }
+
+      /* ============================================================
+         Layout
+         ============================================================ */
+      .layout {
+        display: grid;
+        gap: var(--space-4);
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+      }
+
+      @media (min-width: 1024px) {
+        .layout {
+          grid-template-columns: minmax(0, 370px) minmax(0, 1fr);
+          gap: var(--space-5);
+        }
+        .result-col {
+          position: sticky;
+          top: var(--space-5);
+        }
+      }
+
+      .side {
+        display: grid;
+        gap: var(--space-4);
+        min-width: 0;
+      }
+
+      .panel {
+        background: var(--color-card);
+        color: var(--color-card-foreground);
+        border: var(--border-1) solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--panel-padding);
+        min-width: 0;
+      }
+
+      .panel-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .panel-title h2 {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+      }
+
+      .step {
+        color: var(--color-primary);
+        font-weight: var(--font-weight-extrabold);
+      }
+
+      .panel-sub {
+        margin-top: var(--space-1);
+        margin-bottom: var(--space-4);
+        font-size: var(--font-size-sm);
+        color: var(--color-muted-foreground);
+      }
+
+      .count {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-muted-foreground);
+        background: var(--color-muted);
+        border-radius: var(--radius-full);
+        padding: 2px var(--space-3);
+      }
+
+      /* ============================================================
+         状況プリセット
+         ============================================================ */
+      .presets {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--space-2);
+      }
+
+      .preset {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: var(--space-1) var(--space-3);
+        text-align: left;
+        padding: var(--space-3);
+        min-height: var(--control-height);
+        border: var(--border-2) solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-card);
+        color: var(--color-card-foreground);
+        font: inherit;
+        cursor: pointer;
+        transition: border-color var(--duration-fast) var(--ease),
+          background-color var(--duration-fast) var(--ease);
+      }
+
+      .preset .icon {
+        grid-row: span 2;
+        --icon-size: 22px;
+        color: var(--color-muted-foreground);
+      }
+
+      .preset:hover {
+        border-color: var(--color-primary);
+      }
+
+      .preset[aria-pressed="true"] {
+        border-color: var(--color-primary);
+        background: var(--color-primary-surface);
+      }
+
+      .preset[aria-pressed="true"] .icon {
+        color: var(--color-primary);
+      }
+
+      .preset strong {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+      }
+
+      .preset small {
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+      }
+
+      /* ============================================================
+         フォーム
+         ============================================================ */
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--space-3);
+      }
+
+      label {
+        display: grid;
+        gap: var(--space-1);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-muted-foreground);
+        min-width: 0;
+      }
+
+      .req {
+        color: var(--color-accent);
+        font-weight: var(--font-weight-bold);
+      }
+
+      input,
+      select {
+        font: inherit;
+        font-size: var(--font-size-sm);
+        width: 100%;
+        min-width: 0;
+        min-height: var(--control-height);
+        padding: var(--space-2) var(--space-3);
+        color: var(--color-foreground);
+        background: var(--color-card);
+        border: var(--border-1) solid var(--color-input-border);
+        border-radius: var(--radius-sm);
+      }
+
+      input:hover,
+      select:hover {
+        border-color: var(--color-primary);
+      }
+
+      .title-input {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        padding: var(--space-3);
+      }
+
+      .title-input::placeholder {
+        font-weight: 400;
+        color: var(--color-muted-foreground);
+      }
+
+      .switch {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-3);
+        font-size: var(--font-size-sm);
+        color: var(--color-foreground);
+        cursor: pointer;
+        min-height: var(--control-height);
+      }
+
+      .switch input {
+        width: 20px;
+        height: 20px;
+        min-height: 0;
+        accent-color: var(--color-primary);
+      }
+
+      details.tweak {
+        margin-top: var(--space-4);
+        border-top: var(--border-1) solid var(--color-border);
+        padding-top: var(--space-2);
+      }
+
+      summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-height: 32px;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-muted-foreground);
+        transition: color var(--duration-fast) var(--ease);
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary:hover {
+        color: var(--color-primary);
+      }
+
+      summary .icon {
+        --icon-size: 14px;
+        transition: transform var(--duration-fast) var(--ease);
+      }
+
+      details[open] > summary .icon {
+        transform: rotate(90deg);
+      }
+
+      .tweak-body {
+        padding-top: var(--space-3);
+      }
+
+      /* ============================================================
+         ボタン
+         ============================================================ */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        font: inherit;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        padding: var(--space-2) var(--space-4);
+        min-height: var(--control-height);
+        border: var(--border-1) solid var(--color-input-border);
+        border-radius: var(--radius-sm);
+        background: var(--color-card);
+        color: var(--color-foreground);
+        cursor: pointer;
+        transition: background-color var(--duration-fast) var(--ease),
+          border-color var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease);
+      }
+
+      .btn:hover {
+        background: var(--color-muted);
+        border-color: var(--color-primary);
+      }
+
+      .btn-primary {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: var(--color-primary-foreground);
+      }
+
+      .btn-primary:hover {
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
+        color: var(--color-primary-foreground);
+      }
+
+      .btn-cta {
+        width: 100%;
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-extrabold);
+        padding: var(--space-4);
+        min-height: 60px;
+        border-radius: var(--radius-md);
+        background: var(--color-accent);
+        border-color: var(--color-accent);
+        color: var(--color-accent-foreground);
+      }
+
+      .btn-cta:hover {
+        background: var(--color-accent-hover);
+        border-color: var(--color-accent-hover);
+        color: var(--color-accent-foreground);
+      }
+
+      .btn-quiet {
+        border-color: transparent;
+        background: transparent;
+        color: var(--color-muted-foreground);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: progress;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+      }
+
+      /* ============================================================
+         チップ
+         ============================================================ */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-height: var(--chip-height);
+        padding: 0 var(--space-3);
+        border-radius: var(--radius-full);
+        background: var(--color-muted);
+        border: var(--border-1) solid var(--color-border);
+        color: var(--color-foreground);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        white-space: nowrap;
+      }
+
+      .chip .icon {
+        --icon-size: 16px;
+        color: var(--color-muted-foreground);
+      }
+
+      /* ============================================================
+         タスク一覧
+         ============================================================ */
+      .task-list {
+        list-style: none;
+        margin: var(--space-4) 0 0;
+        padding: 0;
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .task-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        border: var(--border-1) solid var(--color-border);
+        border-radius: var(--radius-sm);
+        min-width: 0;
+      }
+
+      .task-row > div {
+        min-width: 0;
+      }
+
+      .task-row .name {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        overflow-wrap: anywhere;
+      }
+
+      .task-row small {
+        display: block;
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        overflow-wrap: anywhere;
+      }
+
+      .icon-btn {
+        flex: none;
+        width: var(--control-height);
+        height: var(--control-height);
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius-sm);
+        border: var(--border-1) solid transparent;
+        background: transparent;
+        color: var(--color-muted-foreground);
+        cursor: pointer;
+        transition: color var(--duration-fast) var(--ease),
+          border-color var(--duration-fast) var(--ease);
+      }
+
+      .icon-btn:hover {
+        color: var(--color-destructive);
+        border-color: var(--color-destructive);
+      }
+
+      .empty {
+        margin-top: var(--space-3);
+        padding: var(--space-4);
+        border: var(--border-1) dashed var(--color-border);
+        border-radius: var(--radius-sm);
+        text-align: center;
+        font-size: var(--font-size-sm);
+        color: var(--color-muted-foreground);
+      }
+
+      /* ============================================================
+         結果カラム
+         ============================================================ */
+      .result-col {
+        display: grid;
+        gap: var(--space-4);
+        min-width: 0;
+      }
+
+      .result-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .result-head h2 {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-extrabold);
+      }
+
+      .status {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-muted-foreground);
+        min-height: 20px;
+      }
+
+      .status.error {
+        color: var(--color-destructive);
+      }
+
+      .notice {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-sm);
+        border: var(--border-1) solid var(--color-success);
+        background: var(--color-success-surface);
+        color: var(--color-success);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+      }
+
+      .notice.warn {
+        border-color: var(--color-accent);
+        background: var(--color-accent-surface);
+        color: var(--color-accent);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .notice {
+          color: var(--color-foreground);
+        }
+      }
+
+      /* ---------- ヒーローカード（1位） ---------- */
+      .hero {
+        padding: var(--space-6);
+        border: var(--border-2) solid var(--color-accent);
+        border-radius: var(--radius-lg);
+        background: var(--color-accent-surface);
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-accent);
+        margin-bottom: var(--space-2);
+      }
+
+      .hero h3 {
+        font-size: clamp(1.75rem, 5vw, 2.75rem);
+        font-weight: var(--font-weight-extrabold);
+        overflow-wrap: anywhere;
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+      }
+
+      .hero .chip {
+        background: var(--color-card);
+        border-color: var(--color-accent);
+      }
+
+      .verdict {
+        margin-top: var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        border-left: 4px solid var(--color-accent);
+        background: var(--color-card);
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+        overflow-wrap: anywhere;
+      }
+
+      /* ---------- 優先度メーター ---------- */
+      .meter {
+        margin-top: var(--space-4);
+      }
+
+      .meter-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-2);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-muted-foreground);
+      }
+
+      .meter-value {
+        color: var(--color-foreground);
+        font-variant-numeric: tabular-nums;
+        font-size: var(--font-size-sm);
+      }
+
+      .meter-value b {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-extrabold);
+        color: var(--level, var(--color-foreground));
+      }
+
+      .hero .meter-value b {
+        font-size: var(--font-size-2xl);
+      }
+
+      .track {
+        height: 10px;
+        margin-top: var(--space-2);
+        border-radius: var(--radius-full);
+        background: var(--color-muted);
+        border: var(--border-1) solid var(--color-border);
+        overflow: hidden;
+      }
+
+      .fill {
+        height: 100%;
+        background: var(--level, var(--color-primary));
+        transition: width var(--duration-normal) var(--ease);
+      }
+
+      /* ---------- ランキング ---------- */
+      .group-label {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin: var(--space-6) 0 var(--space-3);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-muted-foreground);
+      }
+
+      .group-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--color-border);
+      }
+
+      .rank-list {
         list-style: none;
         margin: 0;
         padding: 0;
         display: grid;
-        gap: 8px;
+        gap: var(--space-3);
       }
-      .task-item {
+
+      .card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: var(--space-1) var(--space-4);
+        padding: var(--card-padding);
+        border: var(--border-1) solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-card);
+      }
+
+      .card.dim {
+        background: transparent;
+        padding: var(--space-4);
+      }
+
+      .rank-badge {
+        grid-row: span 4;
+        align-self: start;
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius-sm);
+        background: var(--color-muted);
+        border: var(--border-1) solid var(--color-border);
+        color: var(--color-foreground);
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-extrabold);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .card.dim .rank-badge {
+        background: transparent;
+        color: var(--color-muted-foreground);
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .card-title {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+        overflow-wrap: anywhere;
+      }
+
+      .card.dim .card-title {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-muted-foreground);
+      }
+
+      .card-meta,
+      .card-level {
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        overflow-wrap: anywhere;
+      }
+
+      .card-level {
+        color: var(--level, var(--color-muted-foreground));
+        font-weight: var(--font-weight-semibold);
+      }
+
+      .delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 1px var(--space-2);
+        border-radius: var(--radius-full);
+        border: var(--border-1) solid var(--color-border);
+        background: var(--color-muted);
+        color: var(--color-muted-foreground);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .delta .icon {
+        --icon-size: 13px;
+      }
+
+      .delta.up {
+        border-color: var(--color-success);
+        background: var(--color-success-surface);
+        color: var(--color-success);
+      }
+
+      .delta.new {
+        border-color: var(--color-primary);
+        background: var(--color-primary-surface);
+        color: var(--color-primary);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .delta.up,
+        .delta.new {
+          color: var(--color-foreground);
+        }
+      }
+
+      /* ---------- Jev判定詳細 ---------- */
+      details.jev {
+        grid-column: 2;
+        margin-top: var(--space-2);
+      }
+
+      .hero details.jev {
+        grid-column: auto;
+        margin-top: var(--space-4);
+      }
+
+      details.jev > summary {
+        font-size: var(--font-size-xs);
+      }
+
+      .jev-body {
+        margin-top: var(--space-2);
+        padding: var(--space-3);
+        border-radius: var(--radius-sm);
+        background: var(--color-muted);
+        border: var(--border-1) solid var(--color-border);
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        display: grid;
+        gap: var(--space-1);
+      }
+
+      .kv {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-        padding: 8px 10px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
+        gap: var(--space-4);
       }
-      .task-item small {
-        color: var(--muted);
+
+      .kv code {
+        color: var(--color-foreground);
+        font-variant-numeric: tabular-nums;
       }
-      .group-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--muted);
-        margin: 4px 0 8px;
-      }
-      .result {
+
+      .rubric {
+        margin: var(--space-2) 0 0;
+        padding-left: var(--space-5);
         display: grid;
-        gap: 4px;
-        padding: 12px 14px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #fff;
+        gap: 2px;
       }
-      .result.top {
-        border-color: var(--accent);
-        border-width: 2px;
-        background: #fff8f4;
+
+      .rubric li.active {
+        color: var(--color-foreground);
+        font-weight: var(--font-weight-bold);
       }
-      .result-head {
-        display: flex;
-        align-items: baseline;
-        gap: 8px;
+
+      /* ---------- 空状態 / 読み込み ---------- */
+      .placeholder {
+        display: grid;
+        justify-items: center;
+        gap: var(--space-2);
+        padding: var(--space-10) var(--space-5);
+        border: var(--border-1) dashed var(--color-border);
+        border-radius: var(--radius-lg);
+        text-align: center;
+        color: var(--color-muted-foreground);
       }
-      .rank {
-        font-weight: 700;
-        color: var(--muted);
+
+      .placeholder .icon {
+        --icon-size: 34px;
+        color: var(--color-primary);
       }
-      .title {
-        font-size: 16px;
-        font-weight: 600;
+
+      .placeholder strong {
+        color: var(--color-foreground);
+        font-size: var(--font-size-base);
       }
-      .result.top .title {
-        font-size: 19px;
+
+      .placeholder span {
+        font-size: var(--font-size-sm);
+        max-width: 38ch;
       }
-      .meta,
-      .judgement {
-        font-size: 12px;
-        color: var(--muted);
+
+      .skeleton {
+        border-radius: var(--radius-md);
+        border: var(--border-1) solid var(--color-border);
+        background: var(--color-muted);
+        animation: pulse 1.4s ease-in-out infinite;
       }
-      .judgement code {
-        background: #f0f0f3;
-        padding: 1px 5px;
-        border-radius: 4px;
+
+      .sk-hero {
+        height: 210px;
       }
-      .level {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--accent);
+
+      .sk-row {
+        height: 84px;
+        margin-top: var(--space-3);
       }
-      .later .level {
-        color: var(--muted);
+
+      @keyframes pulse {
+        50% {
+          opacity: 0.55;
+        }
       }
-      .status {
-        font-size: 13px;
-        color: var(--muted);
-      }
-      .error {
-        color: #c0392b;
-      }
-      hr {
-        border: none;
-        border-top: 1px dashed var(--line);
-        margin: 18px 0 12px;
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+        }
       }
     </style>
   </head>
   <body>
-    <main>
-      <header>
-        <h1>今、何やる？</h1>
-        <p>Todoを管理するのではなく、次にやることを決めてくれる学生向けタスクアプリ</p>
+    <!-- アイコンスプライト（Phosphor系アウトライン） -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <g id="ix" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></g>
+      </defs>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5.5 13.5H11L10 21l7.5-10.5H12L13 3Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3.5 13.6 9 19 10.6 13.6 12.2 12 17.5 10.4 12.2 5 10.6 10.4 9 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9.2V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.2M10 21v-6h4v6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-train" viewBox="0 0 24 24"><path d="M8 3h8a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3ZM5 10h14M8 17l-2 4M16 17l2 4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="13.5" r="1" fill="currentColor"/><circle cx="15" cy="13.5" r="1" fill="currentColor"/></symbol>
+      <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V6.5L12 3l8 3.5V21M9 21v-5h6v5M8.5 10h.01M12 10h.01M15.5 10h.01M8.5 13.5h.01M15.5 13.5h.01M2.5 21h19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8ZM16 9.5h1.5a2.5 2.5 0 0 1 0 5H16M7 3v2M11 3v2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17ZM12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-laptop" viewBox="0 0 24 24"><path d="M6 5h12a2 2 0 0 1 2 2v8H4V7a2 2 0 0 1 2-2ZM2.5 18.5h19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M6 5h12a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5v-11A2.5 2.5 0 0 1 6 5ZM3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-note" viewBox="0 0 24 24"><path d="M6 3.5h8.5L19 8v11.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19.5V5a1.5 1.5 0 0 1 1-1.5ZM14.5 3.5V8H19M8.5 13h7M8.5 16.5h5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3s5.5 4.3 5.5 9.2A5.5 5.5 0 0 1 6.5 12.2c0-1.7.7-3.2 1.6-4.4.5 1.4 1.4 2.4 2.4 2.4 0-3 .5-5.6 1.5-7.2Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5.5M6 11.5 12 5.5l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v13.5M18 12.5 12 18.5l-6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-caret" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.5-5.8M20 3.5V9h-5.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3.5 6.5h3l4 5M3.5 17.5h3l4-5M14 6.5h4.5M14 17.5h4.5M17 4l2.5 2.5L17 9M17 15l2.5 2.5L17 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17ZM12 7.5v5.5M12 16.5h.01" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M9.5 6.5h11M9.5 12h11M9.5 17.5h11M3.5 6.5l1.5 1.5L8 5M3.5 12 5 13.5 8 10.5M3.5 17.5 5 19l3-3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    </svg>
+
+    <div class="app">
+      <header class="masthead">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"><svg class="icon"><use href="#i-bolt" /></svg></span>
+          <div>
+            <h1>今、何やる？</h1>
+            <p class="tagline"><b>今の状況</b>までAIが考えて、次にやる1つを決めます</p>
+          </div>
+        </div>
+        <span class="powered"><svg class="icon" aria-hidden="true" style="--icon-size: 14px"><use href="#i-sparkle" /></svg>Powered by Jev</span>
       </header>
 
-      <section>
-        <h2>今の状況</h2>
-        <div class="grid">
-          <label>現在時刻<input type="datetime-local" id="currentTime" /></label>
-          <label>使える時間（分）<input type="number" id="availableMinutes" value="180" min="5" step="5" /></label>
-          <label>
-            集中力
-            <select id="focus">
-              <option value="high">高い</option>
-              <option value="medium">ふつう</option>
-              <option value="low">低い</option>
-            </select>
-          </label>
-          <label>
-            場所
-            <select id="location">
-              <option value="自宅">自宅</option>
-              <option value="電車の中">電車の中</option>
-              <option value="大学">大学</option>
-              <option value="カフェ">カフェ</option>
-            </select>
-          </label>
-        </div>
-        <div class="row">
-          <span class="checkbox"><input type="checkbox" id="hasPC" checked />PCが使える</span>
-          <button type="button" id="presetHome">自宅・3時間・PCあり</button>
-          <button type="button" id="presetTrain">電車・30分・PCなし</button>
-        </div>
-      </section>
+      <div class="layout">
+        <!-- ===== 入力カラム ===== -->
+        <div class="side">
+          <section class="panel" aria-labelledby="ctx-heading">
+            <div class="panel-title"><h2 id="ctx-heading"><span class="step">①</span> 今の状況</h2></div>
+            <p class="panel-sub">ここを変えると、同じタスクでも順位が変わります。</p>
 
-      <section>
-        <h2>タスクを追加</h2>
-        <form id="taskForm">
-          <div class="grid">
-            <label>タスク名<input id="title" required placeholder="数学レポート" /></label>
-            <label>締切<input type="datetime-local" id="deadline" /></label>
-            <label>所要時間（分）<input type="number" id="estimatedMinutes" min="5" step="5" placeholder="120" /></label>
-            <label>補足<input id="note" placeholder="成績の30%を占める" /></label>
+            <div class="presets" role="group" aria-label="状況プリセット">
+              <button type="button" class="preset" id="presetHome" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-house" /></svg>
+                <strong>自宅モード</strong>
+                <small>3時間・PCあり・集中力高</small>
+              </button>
+              <button type="button" class="preset" id="presetTrain" aria-pressed="false">
+                <svg class="icon" aria-hidden="true"><use href="#i-train" /></svg>
+                <strong>移動中モード</strong>
+                <small>30分・PCなし・集中力低</small>
+              </button>
+            </div>
+
+            <div class="chips" id="contextChips" style="margin-top: var(--space-4)"></div>
+
+            <details class="tweak">
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>状況を細かく調整する</summary>
+              <div class="tweak-body">
+                <div class="fields">
+                  <label for="currentTime">現在時刻<input type="datetime-local" id="currentTime" /></label>
+                  <label for="availableMinutes">使える時間（分）<input type="number" id="availableMinutes" value="180" min="5" step="5" /></label>
+                  <label for="focus">
+                    集中力
+                    <select id="focus">
+                      <option value="high">高い</option>
+                      <option value="medium">ふつう</option>
+                      <option value="low">低い</option>
+                    </select>
+                  </label>
+                  <label for="location">
+                    場所
+                    <select id="location">
+                      <option value="自宅">自宅</option>
+                      <option value="電車の中">電車の中</option>
+                      <option value="大学">大学</option>
+                      <option value="カフェ">カフェ</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="switch" for="hasPC"><input type="checkbox" id="hasPC" checked />PCが使える</label>
+              </div>
+            </details>
+          </section>
+
+          <section class="panel" aria-labelledby="task-heading">
+            <div class="panel-title">
+              <h2 id="task-heading"><span class="step">②</span> やることリスト</h2>
+              <span class="count"><span id="taskCount">0</span> 件</span>
+            </div>
+            <p class="panel-sub">まずはタスク名だけでOK。詳しく書くほど判定の精度が上がります。</p>
+
+            <form id="taskForm" autocomplete="off">
+              <label for="title">やること <span class="req">*必須</span>
+                <input class="title-input" id="title" required placeholder="例：数学レポート" />
+              </label>
+              <details class="tweak">
+                <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>締切・所要時間・補足を追加する</summary>
+                <div class="tweak-body">
+                  <div class="fields">
+                    <label for="deadline">締切<input type="datetime-local" id="deadline" /></label>
+                    <label for="estimatedMinutes">所要時間（分）<input type="number" id="estimatedMinutes" min="5" step="5" placeholder="120" /></label>
+                  </div>
+                  <label for="note" style="margin-top: var(--space-3)">補足<input id="note" placeholder="成績の30%を占める など" /></label>
+                </div>
+              </details>
+              <div class="actions">
+                <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>追加</button>
+                <button type="button" class="btn btn-quiet" id="loadDemo">デモ用タスクを読み込む</button>
+                <button type="button" class="btn btn-quiet" id="clearTasks">全て削除</button>
+              </div>
+            </form>
+
+            <ul class="task-list" id="taskList"></ul>
+            <p class="empty" id="taskEmpty">まだタスクがありません。「デモ用タスクを読み込む」が手早いです。</p>
+          </section>
+        </div>
+
+        <!-- ===== 結果カラム ===== -->
+        <section class="result-col" aria-labelledby="result-heading">
+          <div class="result-head">
+            <h2 id="result-heading"><span class="step">③</span> 今やる順</h2>
+            <p class="status" id="status" role="status" aria-live="polite"></p>
           </div>
-          <div class="row">
-            <button type="submit" class="primary">追加する</button>
-            <button type="button" id="loadDemo">デモ用タスクを読み込む</button>
-            <button type="button" id="clearTasks">全て削除</button>
-          </div>
-        </form>
-      </section>
 
-      <section>
-        <h2>登録済みタスク（<span id="taskCount">0</span>件）</h2>
-        <ul id="taskList"></ul>
-        <div class="row">
-          <button type="button" class="primary" id="rankButton">この状況で「今やる順」を判定する</button>
-          <span class="status" id="status"></span>
-        </div>
-      </section>
+          <button type="button" class="btn btn-cta" id="rankButton">この状況で「今やること」を決める</button>
 
-      <section id="resultSection" hidden>
-        <h2>判定結果</h2>
-        <div id="results"></div>
-      </section>
-    </main>
+          <div id="staleNotice"></div>
+          <div id="results"></div>
+        </section>
+      </div>
+    </div>
 
     <script>
       const FOCUS_LABEL = { high: "高い", medium: "ふつう", low: "低い" };
-      const el = (id) => document.getElementById(id);
-      let tasks = [];
+      const PLACE_ICON = { 自宅: "i-house", 電車の中: "i-train", 大学: "i-building", カフェ: "i-coffee" };
+      const LEVEL_TOKEN = ["var(--level-0)", "var(--level-1)", "var(--level-2)", "var(--level-3)"];
 
-      const toLocalInput = (date) => {
-        const pad = (n) => String(n).padStart(2, "0");
-        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-      };
+      const el = (id) => document.getElementById(id);
+      const escapeHtml = (value) =>
+        String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#${name}" /></svg>`;
+
+      let tasks = [];
+      let lastRanking = null; // 前回の判定結果（順位変化の表示に使う）
+      let judgedContextKey = null; // 判定時の状況（変更検知に使う）
+
+      /* ---------- 日時ユーティリティ ---------- */
+      const pad = (n) => String(n).padStart(2, "0");
+      const toLocalInput = (d) =>
+        `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
       const addDays = (days, hours, minutes) => {
         const d = new Date();
@@ -289,14 +1260,27 @@
         return toLocalInput(d);
       };
 
-      const formatDeadline = (value) => {
+      const deadlineText = (value) => {
         if (!value) return "締切なし";
-        const d = new Date(value);
-        const days = Math.ceil((d - new Date()) / 86400000);
-        const when = days <= 0 ? "今日" : days === 1 ? "明日" : `${days}日後`;
-        return `${when} ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        const target = new Date(value);
+        const days = Math.ceil((target - new Date()) / 86400000);
+        const clock = `${target.getMonth() + 1}/${target.getDate()} ${pad(target.getHours())}:${pad(target.getMinutes())}`;
+        if (days < 0) return `締切を過ぎています（${clock}）`;
+        if (days === 0) return `今日まで（${clock}）`;
+        if (days === 1) return `あと1日（${clock}）`;
+        return `あと${days}日（${clock}）`;
       };
 
+      const taskMetaText = (task) =>
+        [
+          deadlineText(task.deadline),
+          task.estimatedMinutes ? `約${task.estimatedMinutes}分` : null,
+          task.note,
+        ]
+          .filter(Boolean)
+          .join(" ・ ");
+
+      /* ---------- 状況 ---------- */
       const readContext = () => ({
         currentTime: el("currentTime").value,
         availableMinutes: Number(el("availableMinutes").value),
@@ -305,65 +1289,175 @@
         hasPC: el("hasPC").checked,
       });
 
+      const contextChipHtml = (ctx) =>
+        [
+          [PLACE_ICON[ctx.location] ?? "i-house", ctx.location],
+          ["i-clock", `${ctx.availableMinutes}分`],
+          ["i-bolt", `集中力：${ctx.focus}`],
+          ["i-laptop", ctx.hasPC ? "PCあり" : "PCなし"],
+        ]
+          .map(([name, text]) => `<span class="chip">${icon(name)}${escapeHtml(text)}</span>`)
+          .join("");
+
+      const contextKey = (ctx) => JSON.stringify(ctx);
+
+      const renderContextChips = () => {
+        el("contextChips").innerHTML = contextChipHtml(readContext());
+        syncPresetState();
+        renderStaleNotice();
+      };
+
+      const PRESETS = {
+        home: { minutes: 180, focus: "high", location: "自宅", hasPC: true },
+        train: { minutes: 30, focus: "low", location: "電車の中", hasPC: false },
+      };
+
+      const syncPresetState = () => {
+        const now = {
+          minutes: Number(el("availableMinutes").value),
+          focus: el("focus").value,
+          location: el("location").value,
+          hasPC: el("hasPC").checked,
+        };
+        const matches = (p) => p.minutes === now.minutes && p.focus === now.focus && p.location === now.location && p.hasPC === now.hasPC;
+        el("presetHome").setAttribute("aria-pressed", String(matches(PRESETS.home)));
+        el("presetTrain").setAttribute("aria-pressed", String(matches(PRESETS.train)));
+      };
+
+      const applyPreset = (preset) => {
+        el("availableMinutes").value = preset.minutes;
+        el("focus").value = preset.focus;
+        el("location").value = preset.location;
+        el("hasPC").checked = preset.hasPC;
+        renderContextChips();
+      };
+
+      const renderStaleNotice = () => {
+        const stale = judgedContextKey !== null && judgedContextKey !== contextKey(readContext());
+        el("staleNotice").innerHTML = stale
+          ? `<p class="notice warn">${icon("i-refresh")}状況が変わりました。もう一度判定すると順位が変わります。</p>`
+          : "";
+      };
+
+      /* ---------- タスク ---------- */
       const renderTasks = () => {
         el("taskCount").textContent = tasks.length;
-        el("taskList").innerHTML = "";
+        el("taskEmpty").hidden = tasks.length > 0;
+        const list = el("taskList");
+        list.innerHTML = "";
         tasks.forEach((task, index) => {
           const li = document.createElement("li");
-          li.className = "task-item";
-          const info = document.createElement("div");
-          info.innerHTML = `<div>${task.title}</div><small>${formatDeadline(task.deadline)}${task.estimatedMinutes ? ` / 約${task.estimatedMinutes}分` : ""}${task.note ? ` / ${task.note}` : ""}</small>`;
-          const remove = document.createElement("button");
-          remove.textContent = "削除";
-          remove.onclick = () => {
+          li.className = "task-row";
+          li.innerHTML = `
+            <div>
+              <div class="name">${escapeHtml(task.title)}</div>
+              <small>${escapeHtml(taskMetaText(task))}</small>
+            </div>
+            <button type="button" class="icon-btn" aria-label="「${escapeHtml(task.title)}」を削除">${icon("i-x")}</button>`;
+          li.querySelector("button").onclick = () => {
             tasks.splice(index, 1);
             renderTasks();
           };
-          li.append(info, remove);
-          el("taskList").append(li);
+          list.append(li);
         });
       };
 
-      const renderResults = (results) => {
-        const container = el("results");
-        container.innerHTML = "";
-
-        const renderGroup = (label, items, offset, style) => {
-          if (items.length === 0) return;
-          const heading = document.createElement("div");
-          heading.className = "group-label";
-          heading.textContent = label;
-          container.append(heading);
-
-          const list = document.createElement("ul");
-          items.forEach((item, i) => {
-            const rank = offset + i + 1;
-            const li = document.createElement("li");
-            li.className = `result ${style}`;
-            li.innerHTML = `
-              <div class="result-head">
-                <span class="rank">${rank}.</span>
-                <span class="title">${item.task.title}</span>
-              </div>
-              <div class="meta">${formatDeadline(item.task.deadline)}${item.task.estimatedMinutes ? ` / 約${item.task.estimatedMinutes}分` : ""}${item.task.note ? ` / ${item.task.note}` : ""}</div>
-              <div class="level">今やるべき度：${item.levelLabel}</div>
-              <div class="judgement">Jevの判定 <code>score=${item.score.toFixed(2)} / 3</code> <code>confidence=${item.confidence.toFixed(2)}</code></div>
-            `;
-            list.append(li);
-          });
-          container.append(list);
-        };
-
-        // 1位は常に最上部へ。残りはJevのスコアが閾値以上かで2グループに分ける。
-        const [first, ...rest] = results;
-        renderGroup(first.shouldDoNow ? "🔥 今からやる" : "今やるなら これ", [first], 0, "top");
-        renderGroup("次にやる", rest.filter((r) => r.shouldDoNow), 1, "");
-        const later = rest.filter((r) => !r.shouldDoNow);
-        if (later.length > 0) container.append(document.createElement("hr"));
-        renderGroup("あとでOK", later, results.length - later.length, "later");
-        el("resultSection").hidden = false;
+      /* ---------- 判定結果 ---------- */
+      const jevDetailsHtml = (item, levels, scoreMax) => {
+        const rubric = (levels ?? [])
+          .map((text, i) => `<li class="${i === item.level ? "active" : ""}">${i}: ${escapeHtml(text)}</li>`)
+          .join("");
+        return `
+          <details class="jev">
+            <summary>${icon("i-caret")}AIの判定を見る</summary>
+            <div class="jev-body">
+              <div class="kv"><span>モデル</span><code>Jev / System One（Score）</code></div>
+              <div class="kv"><span>score（今やるべき度）</span><code>${item.score.toFixed(2)} / ${scoreMax}</code></div>
+              <div class="kv"><span>confidence（判定の確信度）</span><code>${item.confidence.toFixed(2)}</code></div>
+              <div class="kv"><span>該当レベル</span><code>${item.level}</code></div>
+              ${rubric ? `<ol class="rubric" start="0">${rubric}</ol>` : ""}
+            </div>
+          </details>`;
       };
 
+      const meterHtml = (item, scoreMax) => `
+        <div class="meter">
+          <div class="meter-head">
+            <span>今やるべき度</span>
+            <span class="meter-value"><b>${item.score.toFixed(2)}</b> / ${scoreMax}</span>
+          </div>
+          <div class="track" role="img" aria-label="今やるべき度 ${item.score.toFixed(2)} / ${scoreMax}">
+            <div class="fill" style="width:${(item.score / scoreMax) * 100}%"></div>
+          </div>
+        </div>`;
+
+      const deltaHtml = (title, rank) => {
+        if (!lastRanking) return "";
+        const before = lastRanking.get(title);
+        if (before === undefined) return `<span class="delta new">NEW</span>`;
+        if (before === rank) return "";
+        const moved = Math.abs(before - rank);
+        return before > rank
+          ? `<span class="delta up" aria-label="順位が${moved}つ上がりました">${icon("i-arrow-up")}${moved}</span>`
+          : `<span class="delta" aria-label="順位が${moved}つ下がりました">${icon("i-arrow-down")}${moved}</span>`;
+      };
+
+      const heroHtml = (item, rank, levels, scoreMax) => `
+        <article class="hero" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-accent)"}">
+          <p class="eyebrow">${icon("i-flame")}今、何やる？ ${deltaHtml(item.task.title, rank)}</p>
+          <h3>${escapeHtml(item.task.title)}</h3>
+          <div class="hero-meta">
+            <span class="chip">${icon("i-calendar")}${escapeHtml(deadlineText(item.task.deadline))}</span>
+            ${item.task.estimatedMinutes ? `<span class="chip">${icon("i-clock")}約${item.task.estimatedMinutes}分</span>` : ""}
+            ${item.task.note ? `<span class="chip">${icon("i-note")}${escapeHtml(item.task.note)}</span>` : ""}
+          </div>
+          ${meterHtml(item, scoreMax)}
+          <p class="verdict">「${escapeHtml(item.levelLabel)}」</p>
+          ${jevDetailsHtml(item, levels, scoreMax)}
+        </article>`;
+
+      const cardHtml = (item, rank, levels, scoreMax, dim) => `
+        <li class="card${dim ? " dim" : ""}" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-primary)"}">
+          <span class="rank-badge" aria-hidden="true">${rank}</span>
+          <div class="card-head">
+            <span class="card-title">${escapeHtml(item.task.title)}</span>
+            ${deltaHtml(item.task.title, rank)}
+          </div>
+          <p class="card-meta">${escapeHtml(taskMetaText(item.task))}</p>
+          <p class="card-level">${escapeHtml(item.levelLabel)}</p>
+          ${meterHtml(item, scoreMax)}
+          ${jevDetailsHtml(item, levels, scoreMax)}
+        </li>`;
+
+      const placeholderHtml = (iconName, title, body) =>
+        `<div class="placeholder">${icon(iconName)}<strong>${title}</strong><span>${body}</span></div>`;
+
+      const renderResults = (data, usedContext) => {
+        const { results, levels, scoreMax = 3 } = data;
+        const ranking = new Map(results.map((r, i) => [r.task.title, i + 1]));
+        const changed = lastRanking && [...ranking].some(([title, rank]) => lastRanking.get(title) !== rank);
+
+        const [first, ...rest] = results;
+        const next = rest.filter((r) => r.shouldDoNow);
+        const later = rest.filter((r) => !r.shouldDoNow);
+
+        const group = (label, items, offset, dim) =>
+          items.length === 0
+            ? ""
+            : `<h3 class="group-label">${label}</h3>
+               <ol class="rank-list">${items.map((item, i) => cardHtml(item, offset + i + 1, levels, scoreMax, dim)).join("")}</ol>`;
+
+        el("results").innerHTML = `
+          ${changed ? `<p class="notice">${icon("i-shuffle")}状況が変わったので、順位が入れ替わりました</p>` : ""}
+          <div class="chips" style="margin: var(--space-3) 0">${contextChipHtml(usedContext)}</div>
+          ${heroHtml(first, 1, levels, scoreMax)}
+          ${group("次にやる", next, 1, false)}
+          ${group("あとでOK", later, results.length - later.length, true)}`;
+
+        lastRanking = ranking;
+      };
+
+      /* ---------- イベント ---------- */
       el("taskForm").onsubmit = (event) => {
         event.preventDefault();
         tasks.push({
@@ -373,6 +1467,7 @@
           note: el("note").value.trim() || null,
         });
         event.target.reset();
+        el("title").focus();
         renderTasks();
       };
 
@@ -388,50 +1483,73 @@
 
       el("clearTasks").onclick = () => {
         tasks = [];
+        lastRanking = null;
+        judgedContextKey = null;
         renderTasks();
-        el("resultSection").hidden = true;
+        renderStaleNotice();
+        el("rankButton").textContent = "この状況で「今やること」を決める";
+        el("results").innerHTML = placeholderHtml(
+          "i-list",
+          "まだ判定していません",
+          "タスクと今の状況を入力して、上のボタンを押してください。Jevが「今やるべき順」を決めます。",
+        );
       };
 
-      const applyPreset = ({ minutes, focus, location, hasPC }) => {
-        el("availableMinutes").value = minutes;
-        el("focus").value = focus;
-        el("location").value = location;
-        el("hasPC").checked = hasPC;
-      };
+      el("presetHome").onclick = () => applyPreset(PRESETS.home);
+      el("presetTrain").onclick = () => applyPreset(PRESETS.train);
 
-      el("presetHome").onclick = () =>
-        applyPreset({ minutes: 180, focus: "high", location: "自宅", hasPC: true });
-      el("presetTrain").onclick = () =>
-        applyPreset({ minutes: 30, focus: "low", location: "電車の中", hasPC: false });
+      for (const id of ["availableMinutes", "focus", "location", "hasPC", "currentTime"]) {
+        el(id).addEventListener("change", renderContextChips);
+      }
 
       el("rankButton").onclick = async () => {
         if (tasks.length === 0) {
-          el("status").textContent = "タスクを追加してください。";
+          el("status").className = "status error";
+          el("status").textContent = "先にタスクを追加してください";
           return;
         }
-        el("rankButton").disabled = true;
+        const context = readContext();
+        const button = el("rankButton");
+        button.disabled = true;
+        button.textContent = "Jevが判定中…";
         el("status").className = "status";
-        el("status").textContent = "Jevが判定中…";
+        el("status").textContent = `${tasks.length}件をJevが判定しています…`;
+        el("results").innerHTML = `<div class="skeleton sk-hero"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div>`;
+
         try {
           const response = await fetch("/api/rank", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ context: readContext(), tasks }),
+            body: JSON.stringify({ context, tasks }),
           });
           const data = await response.json();
-          if (!response.ok) throw new Error(data.error ?? "判定に失敗しました。");
-          renderResults(data.results);
-          el("status").textContent = `判定完了（${data.results.length}件）`;
+          if (!response.ok) throw new Error(data.error ?? "判定に失敗しました");
+          renderResults(data, context);
+          judgedContextKey = contextKey(context);
+          renderStaleNotice();
+          el("status").textContent = `この状況で ${data.results.length} 件を判定しました`;
+          if (window.matchMedia("(max-width: 1023px)").matches) {
+            el("results").scrollIntoView({ behavior: "smooth", block: "start" });
+          }
         } catch (error) {
           el("status").className = "status error";
           el("status").textContent = error.message;
+          el("results").innerHTML = placeholderHtml("i-alert", "判定できませんでした", escapeHtml(error.message));
         } finally {
-          el("rankButton").disabled = false;
+          button.disabled = false;
+          button.textContent = judgedContextKey ? "この状況で もう一度判定する" : "この状況で「今やること」を決める";
         }
       };
 
+      /* ---------- 初期化 ---------- */
       el("currentTime").value = toLocalInput(new Date());
+      el("results").innerHTML = placeholderHtml(
+        "i-list",
+        "まだ判定していません",
+        "タスクと今の状況を入力して、上のボタンを押してください。Jevが「今やるべき順」を決めます。",
+      );
       renderTasks();
+      renderContextChips();
     </script>
   </body>
 </html>
