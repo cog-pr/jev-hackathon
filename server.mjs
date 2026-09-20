@@ -30,6 +30,8 @@ const priorityQuestion = score(
       "`currentContext.availableMinutes` `currentContext.focus` `currentContext.location` `currentContext.hasPC` を踏まえて、今この場でこのタスクを実際に進められるか",
       "締切が近く重要なタスクでも、今の場所・残り時間・道具では着手できない場合は優先度を下げる",
       "重要度が低くても、今の状況でこそ片付けられるタスクは優先度を上げる",
+      "`currentContext.nextEvent` がある場合、その予定が始まるまでに区切りがつくかどうか。中断したくない作業は、まとまった時間が取れるときに回す",
+      "`currentContext.currentEvent` がある場合、ユーザーは今その予定の最中であり、基本的に別の作業に着手できない",
     ],
   },
   PRIORITY_LEVELS,

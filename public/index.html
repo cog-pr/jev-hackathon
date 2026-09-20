@@ -1084,6 +1084,132 @@
         }
       }
 
+      /* ============================================================
+         空き時間の導出表示 / 予定エディタ
+         ============================================================ */
+      .derived {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-top: var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        border: var(--border-1) solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-muted);
+      }
+
+      .derived .icon {
+        --icon-size: 22px;
+        color: var(--color-primary);
+      }
+
+      .derived-main {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+        overflow-wrap: anywhere;
+      }
+
+      .derived-sub {
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        overflow-wrap: anywhere;
+      }
+
+      .quick-times {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-top: var(--space-3);
+      }
+
+      .quick-times .btn {
+        min-height: 36px;
+        padding: var(--space-1) var(--space-3);
+        font-size: var(--font-size-xs);
+      }
+
+      .quick-times .btn[aria-pressed="true"] {
+        background: var(--color-primary-surface);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+
+      .sched-list {
+        list-style: none;
+        margin: var(--space-3) 0 0;
+        padding: 0;
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .sched-row {
+        display: grid;
+        grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .sched-row input,
+      .sched-row select {
+        min-height: 38px;
+        padding: var(--space-1) var(--space-2);
+        font-size: var(--font-size-xs);
+      }
+
+      .sched-row .label-input {
+        grid-column: 1 / 4;
+      }
+
+      .sched-row .icon-btn {
+        width: 38px;
+        height: 38px;
+      }
+
+      @media (min-width: 420px) {
+        .sched-row {
+          grid-template-columns: 4.5rem 5.5rem 5.5rem minmax(0, 1fr) auto;
+        }
+        .sched-row .label-input {
+          grid-column: auto;
+        }
+      }
+
+      .done-btn {
+        justify-content: center;
+        margin-top: var(--space-4);
+        width: 100%;
+        background: var(--color-card);
+        border-color: var(--color-accent);
+        color: var(--color-accent);
+        font-weight: var(--font-weight-bold);
+      }
+
+      .done-btn:hover {
+        background: var(--color-accent);
+        border-color: var(--color-accent);
+        color: var(--color-accent-foreground);
+      }
+
+      .auto-note {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+      }
+
+      .auto-note .dot {
+        width: 8px;
+        height: 8px;
+        flex: none;
+        border-radius: var(--radius-full);
+        background: var(--color-primary);
+      }
+
+      .auto-note.busy .dot {
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
@@ -1116,6 +1242,8 @@
       <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v13.5M18 12.5 12 18.5l-6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
       <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5 9.5 17.5 19.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6.5 3h11M6.5 21h11M8 3v3.2c0 1.6 1.2 2.8 4 5.8 2.8-3 4-4.2 4-5.8V3M8 21v-3.2c0-1.6 1.2-2.8 4-5.8 2.8 3 4 4.2 4 5.8V21" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-caret" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.5-5.8M20 3.5V9h-5.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3.5 6.5h3l4 5M3.5 17.5h3l4-5M14 6.5h4.5M14 17.5h4.5M17 4l2.5 2.5L17 9M17 15l2.5 2.5L17 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -1155,14 +1283,27 @@
               </button>
             </div>
 
+            <div class="derived" id="derived">
+              <svg class="icon" aria-hidden="true"><use href="#i-hourglass" /></svg>
+              <div>
+                <div class="derived-main" id="derivedMain">—</div>
+                <div class="derived-sub" id="derivedSub"></div>
+              </div>
+            </div>
+
+            <div class="quick-times" role="group" aria-label="今使える時間を手動で指定">
+              <button type="button" class="btn" data-minutes="15" aria-pressed="false">今15分</button>
+              <button type="button" class="btn" data-minutes="30" aria-pressed="false">今30分</button>
+              <button type="button" class="btn" data-minutes="60" aria-pressed="false">今1時間</button>
+              <button type="button" class="btn" id="clearOverride" hidden>予定から自動に戻す</button>
+            </div>
+
             <div class="chips" id="contextChips" style="margin-top: var(--space-4)"></div>
 
             <details class="tweak">
-              <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>状況を細かく調整する</summary>
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>場所・集中力を調整する</summary>
               <div class="tweak-body">
                 <div class="fields">
-                  <label for="currentTime">現在時刻<input type="datetime-local" id="currentTime" /></label>
-                  <label for="availableMinutes">使える時間（分）<input type="number" id="availableMinutes" value="180" min="5" step="5" /></label>
                   <label for="focus">
                     集中力
                     <select id="focus">
@@ -1182,6 +1323,21 @@
                   </label>
                 </div>
                 <label class="switch" for="hasPC"><input type="checkbox" id="hasPC" checked />PCが使える</label>
+              </div>
+            </details>
+
+            <details class="tweak">
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>予定を登録する（時間割・バイト）</summary>
+              <div class="tweak-body">
+                <p class="derived-sub" style="margin-bottom: var(--space-3)">
+                  毎週繰り返す予定だけを登録します。ここから空き時間を自動で計算します。
+                </p>
+                <ul class="sched-list" id="scheduleList"></ul>
+                <p class="empty" id="scheduleEmpty">予定が未登録です。登録すると使える時間を自動で計算します。</p>
+                <div class="actions">
+                  <button type="button" class="btn btn-primary" id="addSchedule"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>予定を追加</button>
+                  <button type="button" class="btn btn-quiet" id="loadDemoSchedule">デモ用の予定を入れる</button>
+                </div>
               </div>
             </details>
           </section>
@@ -1226,7 +1382,10 @@
             <p class="status" id="status" role="status" aria-live="polite"></p>
           </div>
 
-          <button type="button" class="btn btn-cta" id="rankButton">この状況で「今やること」を決める</button>
+          <div class="result-head">
+            <p class="auto-note" id="autoNote"><span class="dot" aria-hidden="true"></span>状況が変わると自動で判定し直します</p>
+            <button type="button" class="btn" id="rankButton"><svg class="icon" aria-hidden="true"><use href="#i-refresh" /></svg>今すぐ判定し直す</button>
+          </div>
 
           <div id="staleNotice"></div>
           <div id="results"></div>
@@ -1235,23 +1394,85 @@
     </div>
 
     <script>
+      /* ============================================================
+         定数
+         ============================================================ */
+      const STORAGE_KEY = "ima-nani-yaru/v1";
       const FOCUS_LABEL = { high: "高い", medium: "ふつう", low: "低い" };
       const PLACE_ICON = { 自宅: "i-house", 電車の中: "i-train", 大学: "i-building", カフェ: "i-coffee" };
       const LEVEL_TOKEN = ["var(--level-0)", "var(--level-1)", "var(--level-2)", "var(--level-3)"];
+      const DAY_LABEL = ["日", "月", "火", "水", "木", "金", "土"];
+
+      // 空き時間の上限。これ以上は「当面まとまった時間がある」として扱う。
+      const MAX_AVAILABLE_MINUTES = 180;
+      // 予定を探す先読み日数（週1回の予定でも次回を見つけられるよう8日）。
+      const LOOKAHEAD_DAYS = 8;
+      // 再判定をまとめる待ち時間。連続操作で何度もAPIを呼ばないため。
+      const DEBOUNCE_MS = 600;
+      // 時間経過を監視する間隔。API呼び出しではなく再計算のみ。
+      const TICK_MS = 30000;
+      // 手動指定した使える時間の有効期限。
+      const OVERRIDE_TTL_MS = 3 * 60 * 60 * 1000;
+      // 「意味のある変化」とみなす空き時間の区切り（分）。
+      const MINUTE_BUCKETS = [0, 10, 20, 30, 45, 60, 90, 120, MAX_AVAILABLE_MINUTES];
 
       const el = (id) => document.getElementById(id);
       const escapeHtml = (value) =>
         String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
       const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#${name}" /></svg>`;
+      const uid = () => Math.random().toString(36).slice(2, 10);
 
+      /* ============================================================
+         状態
+         ============================================================ */
       let tasks = [];
-      let lastRanking = null; // 前回の判定結果（順位変化の表示に使う）
-      let judgedContextKey = null; // 判定時の状況（変更検知に使う）
+      let schedule = [];
+      let override = null; // { minutes, setAt, boundary }
+      let situation = { focus: "high", location: "自宅", hasPC: true };
 
-      /* ---------- 日時ユーティリティ ---------- */
+      let lastRanking = null; // 前回の順位（変動バッジ用）
+      let lastSignature = null; // 最後に判定したコンテキストの署名
+      let debounceTimer = null;
+      let pendingReason = "";
+      let requestSeq = 0;
+      let inFlight = null;
+
+      /* ============================================================
+         永続化
+         ============================================================ */
+      const persist = () => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, schedule, override, situation }));
+        } catch {
+          /* プライベートモード等では保存できないが、動作は継続する */
+        }
+      };
+
+      const restore = () => {
+        let saved = null;
+        try {
+          saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
+        } catch {
+          saved = null;
+        }
+        if (!saved) return;
+        if (Array.isArray(saved.tasks)) tasks = saved.tasks.filter((t) => t && t.title);
+        if (Array.isArray(saved.schedule)) schedule = saved.schedule.filter((s) => s && typeof s.day === "number");
+        if (saved.override && typeof saved.override.minutes === "number") override = saved.override;
+        if (saved.situation) situation = { ...situation, ...saved.situation };
+      };
+
+      /* ============================================================
+         日時ユーティリティ
+         ============================================================ */
       const pad = (n) => String(n).padStart(2, "0");
+      const hhmm = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
       const toLocalInput = (d) =>
         `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const parseHM = (value) => {
+        const m = /^(\d{1,2}):(\d{2})$/.exec(value ?? "");
+        return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+      };
 
       const addDays = (days, hours, minutes) => {
         const d = new Date();
@@ -1272,39 +1493,156 @@
       };
 
       const taskMetaText = (task) =>
-        [
-          deadlineText(task.deadline),
-          task.estimatedMinutes ? `約${task.estimatedMinutes}分` : null,
-          task.note,
-        ]
+        [deadlineText(task.deadline), task.estimatedMinutes ? `約${task.estimatedMinutes}分` : null, task.note]
           .filter(Boolean)
           .join(" ・ ");
 
-      /* ---------- 状況 ---------- */
-      const readContext = () => ({
-        currentTime: el("currentTime").value,
-        availableMinutes: Number(el("availableMinutes").value),
-        focus: FOCUS_LABEL[el("focus").value],
-        location: el("location").value,
-        hasPC: el("hasPC").checked,
-      });
+      const minutesText = (minutes) =>
+        minutes >= MAX_AVAILABLE_MINUTES
+          ? "3時間以上"
+          : minutes >= 60
+            ? `${Math.floor(minutes / 60)}時間${minutes % 60 ? `${minutes % 60}分` : ""}`
+            : `${minutes}分`;
 
+      /* ============================================================
+         予定から空き時間を算出する
+         ============================================================ */
+      const upcomingOccurrences = (now) => {
+        const out = [];
+        for (let offset = 0; offset <= LOOKAHEAD_DAYS; offset += 1) {
+          const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+          for (const entry of schedule) {
+            if (entry.day !== date.getDay()) continue;
+            const start = parseHM(entry.start);
+            const end = parseHM(entry.end);
+            if (start === null || end === null || end <= start) continue; // 不正な行は無視する
+            out.push({
+              label: entry.label?.trim() || "予定",
+              start: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, start),
+              end: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, end),
+            });
+          }
+        }
+        return out.sort((a, b) => a.start - b.start);
+      };
+
+      const computeAvailability = (now) => {
+        const events = upcomingOccurrences(now);
+        const current = events.find((e) => e.start <= now && now < e.end);
+        if (current) {
+          return {
+            mode: "busy",
+            minutes: 0,
+            currentEvent: { label: current.label, endsAt: hhmm(current.end) },
+            nextEvent: null,
+          };
+        }
+        const next = events.find((e) => e.start > now);
+        if (!next) {
+          return { mode: "clear", minutes: MAX_AVAILABLE_MINUTES, currentEvent: null, nextEvent: null };
+        }
+        const gap = Math.max(0, Math.floor((next.start - now) / 60000));
+        return {
+          mode: "free",
+          minutes: Math.min(gap, MAX_AVAILABLE_MINUTES),
+          currentEvent: null,
+          nextEvent: { label: next.label, startsAt: hhmm(next.start), startsInMinutes: gap },
+        };
+      };
+
+      // 予定の切れ目が変わったかを表す鍵。手動指定の失効判定に使う。
+      const boundaryKey = (availability) =>
+        availability.mode === "busy"
+          ? `busy:${availability.currentEvent.endsAt}`
+          : `free:${availability.nextEvent ? availability.nextEvent.startsAt : "none"}`;
+
+      const activeOverride = (availability) => {
+        if (!override) return null;
+        if (Date.now() - override.setAt > OVERRIDE_TTL_MS) return null;
+        if (override.boundary && override.boundary !== boundaryKey(availability)) return null; // 予定が切り替わったら解除
+        return override;
+      };
+
+      const buildContext = () => {
+        const now = new Date();
+        const availability = computeAvailability(now);
+        const active = activeOverride(availability);
+        return {
+          now,
+          availability,
+          active,
+          context: {
+            currentTime: toLocalInput(now),
+            availableMinutes: active ? active.minutes : availability.minutes,
+            focus: FOCUS_LABEL[situation.focus],
+            location: situation.location,
+            hasPC: situation.hasPC,
+            currentEvent: availability.currentEvent,
+            nextEvent: availability.nextEvent,
+          },
+        };
+      };
+
+      /* ============================================================
+         コンテキスト署名 — これが変わったときだけ再判定する
+         ============================================================ */
+      const bucketOf = (minutes) => MINUTE_BUCKETS.filter((b) => b <= minutes).pop() ?? 0;
+
+      const contextSignature = () => {
+        const { context } = buildContext();
+        return JSON.stringify({
+          tasks: tasks.map((t) => [t.title, t.deadline, t.estimatedMinutes, t.note]),
+          bucket: bucketOf(context.availableMinutes), // 分単位の増減では発火させない
+          next: context.nextEvent ? `${context.nextEvent.label}@${context.nextEvent.startsAt}` : null,
+          current: context.currentEvent ? `${context.currentEvent.label}@${context.currentEvent.endsAt}` : null,
+          focus: context.focus,
+          location: context.location,
+          hasPC: context.hasPC,
+          hour: context.currentTime.slice(0, 13), // 締切の切迫度を1時間ごとに見直す
+        });
+      };
+
+      /* ============================================================
+         状況まわりの描画
+         ============================================================ */
       const contextChipHtml = (ctx) =>
         [
           [PLACE_ICON[ctx.location] ?? "i-house", ctx.location],
-          ["i-clock", `${ctx.availableMinutes}分`],
+          ["i-clock", minutesText(ctx.availableMinutes)],
           ["i-bolt", `集中力：${ctx.focus}`],
           ["i-laptop", ctx.hasPC ? "PCあり" : "PCなし"],
         ]
           .map(([name, text]) => `<span class="chip">${icon(name)}${escapeHtml(text)}</span>`)
           .join("");
 
-      const contextKey = (ctx) => JSON.stringify(ctx);
+      const renderSituation = () => {
+        const { availability, active, context } = buildContext();
 
-      const renderContextChips = () => {
-        el("contextChips").innerHTML = contextChipHtml(readContext());
-        syncPresetState();
-        renderStaleNotice();
+        if (active) {
+          el("derivedMain").textContent = `今使えるのは ${minutesText(active.minutes)}`;
+          el("derivedSub").textContent = "あなたが指定した時間を使っています";
+        } else if (availability.mode === "busy") {
+          el("derivedMain").textContent = `今は「${availability.currentEvent.label}」の最中`;
+          el("derivedSub").textContent = `${availability.currentEvent.endsAt} に終わる予定です`;
+        } else if (availability.mode === "free") {
+          el("derivedMain").textContent = `次の予定まで ${minutesText(availability.nextEvent.startsInMinutes)}`;
+          el("derivedSub").textContent = `${availability.nextEvent.startsAt} から「${availability.nextEvent.label}」`;
+        } else {
+          el("derivedMain").textContent = schedule.length === 0 ? "予定が未登録です" : "この先しばらく予定はありません";
+          el("derivedSub").textContent =
+            schedule.length === 0 ? "3時間使える前提で判定しています" : "まとまった時間が取れます";
+        }
+
+        el("clearOverride").hidden = !active;
+        for (const button of document.querySelectorAll(".quick-times [data-minutes]")) {
+          button.setAttribute("aria-pressed", String(Boolean(active) && active.minutes === Number(button.dataset.minutes)));
+        }
+
+        el("focus").value = situation.focus;
+        el("location").value = situation.location;
+        el("hasPC").checked = situation.hasPC;
+        el("contextChips").innerHTML = contextChipHtml(context);
+        syncPresetState(active);
       };
 
       const PRESETS = {
@@ -1312,40 +1650,74 @@
         train: { minutes: 30, focus: "low", location: "電車の中", hasPC: false },
       };
 
-      const syncPresetState = () => {
-        const now = {
-          minutes: Number(el("availableMinutes").value),
-          focus: el("focus").value,
-          location: el("location").value,
-          hasPC: el("hasPC").checked,
-        };
-        const matches = (p) => p.minutes === now.minutes && p.focus === now.focus && p.location === now.location && p.hasPC === now.hasPC;
+      const syncPresetState = (active) => {
+        const matches = (p) =>
+          Boolean(active) &&
+          active.minutes === p.minutes &&
+          situation.focus === p.focus &&
+          situation.location === p.location &&
+          situation.hasPC === p.hasPC;
         el("presetHome").setAttribute("aria-pressed", String(matches(PRESETS.home)));
         el("presetTrain").setAttribute("aria-pressed", String(matches(PRESETS.train)));
       };
 
-      const applyPreset = (preset) => {
-        el("availableMinutes").value = preset.minutes;
-        el("focus").value = preset.focus;
-        el("location").value = preset.location;
-        el("hasPC").checked = preset.hasPC;
-        renderContextChips();
+      const setOverride = (minutes) => {
+        const { availability } = buildContext();
+        override = { minutes, setAt: Date.now(), boundary: boundaryKey(availability) };
       };
 
-      const renderStaleNotice = () => {
-        const stale = judgedContextKey !== null && judgedContextKey !== contextKey(readContext());
-        el("staleNotice").innerHTML = stale
-          ? `<p class="notice warn">${icon("i-refresh")}状況が変わりました。もう一度判定すると順位が変わります。</p>`
-          : "";
+      /* ============================================================
+         予定エディタ
+         ============================================================ */
+      const renderSchedule = () => {
+        const list = el("scheduleList");
+        list.innerHTML = "";
+        el("scheduleEmpty").hidden = schedule.length > 0;
+
+        schedule.forEach((entry) => {
+          const li = document.createElement("li");
+          li.className = "sched-row";
+          li.innerHTML = `
+            <select aria-label="曜日">${DAY_LABEL.map(
+              (d, i) => `<option value="${i}"${i === entry.day ? " selected" : ""}>${d}曜</option>`,
+            ).join("")}</select>
+            <input type="time" value="${escapeHtml(entry.start)}" aria-label="開始時刻" />
+            <input type="time" value="${escapeHtml(entry.end)}" aria-label="終了時刻" />
+            <input class="label-input" type="text" value="${escapeHtml(entry.label)}" placeholder="授業" aria-label="予定の名前" />
+            <button type="button" class="icon-btn" aria-label="「${escapeHtml(entry.label || "予定")}」を削除">${icon("i-x")}</button>`;
+
+          const [day, start, end, label] = li.querySelectorAll("select, input");
+          const commit = () => {
+            entry.day = Number(day.value);
+            entry.start = start.value;
+            entry.end = end.value;
+            entry.label = label.value;
+            persist();
+            renderSituation();
+            requestJudge("予定が変わった");
+          };
+          for (const field of [day, start, end, label]) field.addEventListener("change", commit);
+
+          li.querySelector("button").onclick = () => {
+            schedule = schedule.filter((s) => s.id !== entry.id);
+            persist();
+            renderSchedule();
+            renderSituation();
+            requestJudge("予定が変わった");
+          };
+          list.append(li);
+        });
       };
 
-      /* ---------- タスク ---------- */
+      /* ============================================================
+         タスク
+         ============================================================ */
       const renderTasks = () => {
         el("taskCount").textContent = tasks.length;
         el("taskEmpty").hidden = tasks.length > 0;
         const list = el("taskList");
         list.innerHTML = "";
-        tasks.forEach((task, index) => {
+        tasks.forEach((task) => {
           const li = document.createElement("li");
           li.className = "task-row";
           li.innerHTML = `
@@ -1353,16 +1725,31 @@
               <div class="name">${escapeHtml(task.title)}</div>
               <small>${escapeHtml(taskMetaText(task))}</small>
             </div>
-            <button type="button" class="icon-btn" aria-label="「${escapeHtml(task.title)}」を削除">${icon("i-x")}</button>`;
-          li.querySelector("button").onclick = () => {
-            tasks.splice(index, 1);
-            renderTasks();
-          };
+            <div style="display:flex; flex:none">
+              <button type="button" class="icon-btn" data-act="done" aria-label="「${escapeHtml(task.title)}」を完了にする">${icon("i-check")}</button>
+              <button type="button" class="icon-btn" data-act="remove" aria-label="「${escapeHtml(task.title)}」を削除">${icon("i-x")}</button>
+            </div>`;
+          li.querySelector('[data-act="done"]').onclick = () => completeTask(task.id, task.title);
+          li.querySelector('[data-act="remove"]').onclick = () => removeTask(task.id, "タスクを削除した");
           list.append(li);
         });
       };
 
-      /* ---------- 判定結果 ---------- */
+      const removeTask = (id, reason) => {
+        tasks = tasks.filter((t) => t.id !== id);
+        persist();
+        renderTasks();
+        requestJudge(reason);
+      };
+
+      const completeTask = (id, title) => {
+        lastRanking?.delete(title);
+        removeTask(id, `「${title}」を完了した`);
+      };
+
+      /* ============================================================
+         判定結果の描画
+         ============================================================ */
       const jevDetailsHtml = (item, levels, scoreMax) => {
         const rubric = (levels ?? [])
           .map((text, i) => `<li class="${i === item.level ? "active" : ""}">${i}: ${escapeHtml(text)}</li>`)
@@ -1402,9 +1789,9 @@
           : `<span class="delta" aria-label="順位が${moved}つ下がりました">${icon("i-arrow-down")}${moved}</span>`;
       };
 
-      const heroHtml = (item, rank, levels, scoreMax) => `
+      const heroHtml = (item, levels, scoreMax) => `
         <article class="hero" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-accent)"}">
-          <p class="eyebrow">${icon("i-flame")}今、何やる？ ${deltaHtml(item.task.title, rank)}</p>
+          <p class="eyebrow">${icon("i-flame")}今、何やる？ <span class="visually-hidden">1位</span>${deltaHtml(item.task.title, 1)}</p>
           <h3>${escapeHtml(item.task.title)}</h3>
           <div class="hero-meta">
             <span class="chip">${icon("i-calendar")}${escapeHtml(deadlineText(item.task.deadline))}</span>
@@ -1413,6 +1800,7 @@
           </div>
           ${meterHtml(item, scoreMax)}
           <p class="verdict">「${escapeHtml(item.levelLabel)}」</p>
+          <button type="button" class="btn done-btn" id="heroDone">${icon("i-check")}これを終わらせた</button>
           ${jevDetailsHtml(item, levels, scoreMax)}
         </article>`;
 
@@ -1432,6 +1820,13 @@
       const placeholderHtml = (iconName, title, body) =>
         `<div class="placeholder">${icon(iconName)}<strong>${title}</strong><span>${body}</span></div>`;
 
+      const showPlaceholder = () =>
+        (el("results").innerHTML = placeholderHtml(
+          "i-list",
+          "やることがありません",
+          "タスクを追加すると、Jevが今やるべき順を自動で判定します。",
+        ));
+
       const renderResults = (data, usedContext) => {
         const { results, levels, scoreMax = 3 } = data;
         const ranking = new Map(results.map((r, i) => [r.task.title, i + 1]));
@@ -1450,17 +1845,98 @@
         el("results").innerHTML = `
           ${changed ? `<p class="notice">${icon("i-shuffle")}状況が変わったので、順位が入れ替わりました</p>` : ""}
           <div class="chips" style="margin: var(--space-3) 0">${contextChipHtml(usedContext)}</div>
-          ${heroHtml(first, 1, levels, scoreMax)}
+          ${heroHtml(first, levels, scoreMax)}
           ${group("次にやる", next, 1, false)}
           ${group("あとでOK", later, results.length - later.length, true)}`;
+
+        const heroTask = tasks.find((t) => t.title === first.task.title);
+        if (heroTask) el("heroDone").onclick = () => completeTask(heroTask.id, heroTask.title);
 
         lastRanking = ranking;
       };
 
-      /* ---------- イベント ---------- */
+      /* ============================================================
+         自動再判定
+         ============================================================ */
+      const setAutoNote = (text, busy) => {
+        el("autoNote").className = busy ? "auto-note busy" : "auto-note";
+        el("autoNote").innerHTML = `<span class="dot" aria-hidden="true"></span>${escapeHtml(text)}`;
+      };
+
+      /**
+       * 再判定を要求する。コンテキスト署名が前回と同じなら何もしない（APIを呼ばない）。
+       * 連続した変更は DEBOUNCE_MS にまとめる。
+       */
+      const requestJudge = (reason, { force = false } = {}) => {
+        if (tasks.length === 0) {
+          lastSignature = null;
+          lastRanking = null;
+          showPlaceholder();
+          setAutoNote("状況が変わると自動で判定し直します", false);
+          return;
+        }
+        if (!force && contextSignature() === lastSignature) return; // 意味のある変化なし
+        pendingReason = reason;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => runJudge(force), DEBOUNCE_MS);
+      };
+
+      const runJudge = async (force = false) => {
+        if (document.hidden) return; // 非表示中は呼ばない。復帰時に署名差分で再実行される
+        const signature = contextSignature();
+        if (!force && signature === lastSignature) return;
+
+        const { context } = buildContext();
+        const reason = pendingReason;
+        const seq = (requestSeq += 1);
+        inFlight?.abort();
+        const controller = new AbortController();
+        inFlight = controller;
+
+        el("rankButton").disabled = true;
+        setAutoNote(reason ? `${reason}ので判定中…` : "判定中…", true);
+        el("status").className = "status";
+        el("status").textContent = `${tasks.length}件をJevが判定しています…`;
+        if (!lastRanking) {
+          el("results").innerHTML = `<div class="skeleton sk-hero"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div>`;
+        }
+
+        try {
+          const response = await fetch("/api/rank", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              context,
+              tasks: tasks.map(({ id, ...rest }) => rest), // 内部IDはJevに渡さない
+            }),
+          });
+          const data = await response.json();
+          if (seq !== requestSeq) return; // 新しい判定が始まっていれば古い結果は捨てる
+          if (!response.ok) throw new Error(data.error ?? "判定に失敗しました");
+
+          renderResults(data, context);
+          lastSignature = signature;
+          el("status").textContent = `${hhmm(new Date())} 時点の状況で判定しました`;
+          setAutoNote(reason ? `${reason}ので判定し直しました` : "最新の状況で判定済みです", false);
+        } catch (error) {
+          if (error.name === "AbortError" || seq !== requestSeq) return;
+          el("status").className = "status error";
+          el("status").textContent = error.message;
+          setAutoNote("判定できませんでした", false);
+          if (!lastRanking) el("results").innerHTML = placeholderHtml("i-alert", "判定できませんでした", escapeHtml(error.message));
+        } finally {
+          if (seq === requestSeq) el("rankButton").disabled = false;
+        }
+      };
+
+      /* ============================================================
+         イベント
+         ============================================================ */
       el("taskForm").onsubmit = (event) => {
         event.preventDefault();
         tasks.push({
+          id: uid(),
           title: el("title").value.trim(),
           deadline: el("deadline").value || null,
           estimatedMinutes: Number(el("estimatedMinutes").value) || null,
@@ -1468,88 +1944,122 @@
         });
         event.target.reset();
         el("title").focus();
+        persist();
         renderTasks();
+        requestJudge("タスクが増えた");
       };
 
       el("loadDemo").onclick = () => {
         tasks = [
-          { title: "数学レポート", deadline: addDays(1, 23, 59), estimatedMinutes: 120, note: "成績の30%を占める" },
-          { title: "就活ES", deadline: addDays(3, 18, 0), estimatedMinutes: 60, note: "志望度が高い企業" },
-          { title: "IT資格の勉強", deadline: addDays(14, 10, 0), estimatedMinutes: 60, note: "2週間後に試験" },
-          { title: "部屋の掃除", deadline: null, estimatedMinutes: 30, note: null },
+          { id: uid(), title: "数学レポート", deadline: addDays(1, 23, 59), estimatedMinutes: 120, note: "成績の30%を占める" },
+          { id: uid(), title: "就活ES", deadline: addDays(3, 18, 0), estimatedMinutes: 60, note: "志望度が高い企業" },
+          { id: uid(), title: "IT資格の勉強", deadline: addDays(14, 10, 0), estimatedMinutes: 60, note: "2週間後に試験" },
+          { id: uid(), title: "部屋の掃除", deadline: null, estimatedMinutes: 30, note: null },
         ];
+        lastRanking = null;
+        persist();
         renderTasks();
+        requestJudge("タスクを読み込んだ");
       };
 
       el("clearTasks").onclick = () => {
         tasks = [];
         lastRanking = null;
-        judgedContextKey = null;
+        persist();
         renderTasks();
-        renderStaleNotice();
-        el("rankButton").textContent = "この状況で「今やること」を決める";
-        el("results").innerHTML = placeholderHtml(
-          "i-list",
-          "まだ判定していません",
-          "タスクと今の状況を入力して、上のボタンを押してください。Jevが「今やるべき順」を決めます。",
-        );
+        requestJudge("タスクを空にした");
+      };
+
+      el("addSchedule").onclick = () => {
+        schedule.push({ id: uid(), day: new Date().getDay(), start: "13:00", end: "14:30", label: "授業" });
+        persist();
+        renderSchedule();
+        renderSituation();
+        requestJudge("予定が変わった");
+      };
+
+      el("loadDemoSchedule").onclick = () => {
+        const today = new Date().getDay();
+        schedule = [
+          { id: uid(), day: today, start: "13:00", end: "14:30", label: "授業" },
+          { id: uid(), day: today, start: "16:00", end: "17:00", label: "バイト" },
+        ];
+        persist();
+        renderSchedule();
+        renderSituation();
+        requestJudge("予定が変わった");
+      };
+
+      for (const button of document.querySelectorAll(".quick-times [data-minutes]")) {
+        button.onclick = () => {
+          setOverride(Number(button.dataset.minutes));
+          persist();
+          renderSituation();
+          requestJudge("使える時間が変わった");
+        };
+      }
+
+      el("clearOverride").onclick = () => {
+        override = null;
+        persist();
+        renderSituation();
+        requestJudge("予定から自動計算に戻した");
+      };
+
+      const applyPreset = (preset) => {
+        situation = { focus: preset.focus, location: preset.location, hasPC: preset.hasPC };
+        setOverride(preset.minutes);
+        persist();
+        renderSituation();
+        requestJudge("状況が変わった");
       };
 
       el("presetHome").onclick = () => applyPreset(PRESETS.home);
       el("presetTrain").onclick = () => applyPreset(PRESETS.train);
 
-      for (const id of ["availableMinutes", "focus", "location", "hasPC", "currentTime"]) {
-        el(id).addEventListener("change", renderContextChips);
+      for (const id of ["focus", "location", "hasPC"]) {
+        el(id).addEventListener("change", () => {
+          situation = { focus: el("focus").value, location: el("location").value, hasPC: el("hasPC").checked };
+          persist();
+          renderSituation();
+          requestJudge("状況が変わった");
+        });
       }
 
-      el("rankButton").onclick = async () => {
+      el("rankButton").onclick = () => {
         if (tasks.length === 0) {
           el("status").className = "status error";
           el("status").textContent = "先にタスクを追加してください";
           return;
         }
-        const context = readContext();
-        const button = el("rankButton");
-        button.disabled = true;
-        button.textContent = "Jevが判定中…";
-        el("status").className = "status";
-        el("status").textContent = `${tasks.length}件をJevが判定しています…`;
-        el("results").innerHTML = `<div class="skeleton sk-hero"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div><div class="skeleton sk-row"></div>`;
-
-        try {
-          const response = await fetch("/api/rank", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ context, tasks }),
-          });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error ?? "判定に失敗しました");
-          renderResults(data, context);
-          judgedContextKey = contextKey(context);
-          renderStaleNotice();
-          el("status").textContent = `この状況で ${data.results.length} 件を判定しました`;
-          if (window.matchMedia("(max-width: 1023px)").matches) {
-            el("results").scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        } catch (error) {
-          el("status").className = "status error";
-          el("status").textContent = error.message;
-          el("results").innerHTML = placeholderHtml("i-alert", "判定できませんでした", escapeHtml(error.message));
-        } finally {
-          button.disabled = false;
-          button.textContent = judgedContextKey ? "この状況で もう一度判定する" : "この状況で「今やること」を決める";
-        }
+        requestJudge("手動で判定", { force: true });
       };
 
-      /* ---------- 初期化 ---------- */
-      el("currentTime").value = toLocalInput(new Date());
-      el("results").innerHTML = placeholderHtml(
-        "i-list",
-        "まだ判定していません",
-        "タスクと今の状況を入力して、上のボタンを押してください。Jevが「今やるべき順」を決めます。",
-      );
+      // 時間経過の監視。表示は毎回更新するが、APIは署名が変わったときだけ呼ぶ。
+      setInterval(() => {
+        renderSituation();
+        requestJudge("時間が経った");
+      }, TICK_MS);
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) return;
+        renderSituation();
+        requestJudge("アプリに戻った");
+      });
+
+      /* ============================================================
+         初期化
+         ============================================================ */
+      restore();
+      renderSchedule();
+      renderSituation();
       renderTasks();
-      renderContextChips();
+      if (tasks.length > 0) {
+        pendingReason = "アプリを開いた";
+        runJudge(true);
+      } else {
+        showPlaceholder();
+      }
     </script>
   </body>
 </html>
