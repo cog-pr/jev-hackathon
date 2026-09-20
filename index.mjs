@@ -11,9 +11,9 @@ const client = new TypeSafeClient();
 
 try {
   const response = await client.systemOne({
-    state: { message: "Jev API との接続テストです。" },
+    state: { message: "帰れ" },
     questions: {
-      isGreeting: noul("このメッセージは挨拶や導入の文章ですか？"),
+      isGreeting: noul("このメッセージは挨拶ですか？"),
     },
   });
 
