@@ -1,7 +1,7 @@
 // 「今、何から手をつけるべきか」を Jev に判定させるサーバー。
 // APIキーはこのプロセス内だけで使い、ブラウザには渡さない。
 import express from "express";
-import { choice, score, TypeSafeClient } from "@typesafe-ai/sdk";
+import { choice, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
 import { extractDeadlineCandidates, extractDurationCandidates, extractTitle, toLocalISO } from "./taskParser.mjs";
 
 if (!process.env.TYPESAFE_API_KEY) {
@@ -39,21 +39,27 @@ const priorityQuestion = score(
 );
 
 // なぜ今このタスクを優先するのか。ランキングには一切使わず、説明のためだけに使う。
+// time_fit / context_fit には、blocker 側の time / device / focus / location と
+// 同時に成立しないよう対比を書いておく（コードでの後処理はしない）。
 const DRIVER_CRITERIA = {
   deadline: "締切が近く、時間的にこれ以上後回しにしにくい",
   importance: "成績・評価・仕事など、結果への影響が大きい",
-  time_fit: "今の空き時間や次の予定までの時間に、この作業が収まりやすい",
-  context_fit: "今いる場所・使える端末・集中状態が、この作業に向いている",
+  time_fit:
+    "`task.estimatedMinutes` が `currentContext.availableMinutes` に収まり、今の空き時間で区切りのつくところまで進められる。時間が足りない場合はこれを選ばない",
+  context_fit:
+    "今いる場所・使える端末・集中状態が、この作業に向いている。場所・端末・集中状態のいずれかがこの作業を妨げている場合はこれを選ばない",
   none: "今このタスクを優先すべき強い理由は見当たらない",
 };
 
-// なぜ今このタスクに取り組みにくいのか。こちらもランキングには使わない。
-const BLOCKER_CRITERIA = {
-  time: "使える時間が短く、この作業を進めるには足りない",
-  device: "この作業に必要なPCや端末・道具が、今は使えない",
-  focus: "この作業に必要な集中力を、今は確保しにくい",
-  location: "今いる場所が、この作業をするのに向いていない",
-  not_yet: "着手を妨げる事情はないが、締切まで余裕があり今やる必要性が低い",
+// 妨げの「種類」だけを答える投機的な質問。妨げの有無は hasBlocker（Noul）で別に判定する。
+const BLOCKER_KIND_CRITERIA = {
+  time: "`task.estimatedMinutes` が `currentContext.availableMinutes` を明らかに超えており、今の時間では区切りのつくところまで進められない。収まっている場合、または所要時間が不明で長時間かかるとは言えない場合は選ばない",
+  device:
+    "`currentContext.hasPC` が false であり、かつ `task` の内容がPCなどの端末を実際に必要とする作業である。端末がないだけで、この作業に端末が要らないなら選ばない",
+  focus:
+    "`currentContext.focus` が低く、かつ `task` がまとまった集中を必要とする作業である。どちらか一方だけでは選ばない",
+  location:
+    "`currentContext.location` が、この `task` を行える場所ではない。その場所でも作業自体はできるなら選ばない",
   none: "今の状況で、この作業に取りかかるのを妨げるものは特にない",
 };
 
@@ -66,20 +72,40 @@ const driverQuestion = choice(
   DRIVER_CRITERIA,
 );
 
-const blockerQuestion = choice(
+// 妨げが「あるかどうか」の判定。Choiceは必ず1つ選ぶため、有無はNoulで別に尋ねる。
+const hasBlockerQuestion = noul(
   {
-    judgment:
-      "`currentContext` の状況にいるユーザーが今この `task` に着手しにくいとしたら、その最大の要因は何か",
-    exclusion: "タスク自体の難しさではなく、今この状況だからこそ生じている要因を1つだけ選ぶ",
+    judgment: "`currentContext` の状況では、ユーザーが今この `task` を進めるのが難しいか",
+    exclusion:
+      "優先度が高いかどうかは問わない。締切まで余裕があることは妨げではない。状態に根拠がない要因を推測しない",
   },
-  BLOCKER_CRITERIA,
+  {
+    true: "今の時間・場所・端末・集中状態のいずれかが原因で、この作業を今は進めにくい。時間が足りず区切りのつくところまで進められない場合も含む",
+    false: "今の状況でも、この作業を支障なく進められる",
+  },
+);
+
+const blockerKindQuestion = choice(
+  {
+    judgment: "仮にこの `task` への着手を妨げる要因があるとすれば、最も当てはまるのはどれか",
+    premise: "妨げの有無そのものは別の質問で判定される。ここでは妨げがある場合を想定して種類だけを選ぶ",
+    exclusion:
+      "`currentContext` や `task` に根拠が書かれていない要因を推測で選ばない。判断がつかない場合は none を選ぶ",
+  },
+  BLOCKER_KIND_CRITERIA,
 );
 
 async function judgeTask(task, currentContext) {
-  // 3つの質問は互いに独立しているため、同じ状態に対して1回の呼び出しでまとめて尋ねる。
+  // 4つの質問は互いに独立しているため、同じ状態に対して1回の呼び出しでまとめて尋ねる。
+  // HTTPリクエストはタスク1件につき1回のまま。
   const { answers } = await client.systemOne({
     state: { currentContext, task },
-    questions: { priority: priorityQuestion, driver: driverQuestion, blocker: blockerQuestion },
+    questions: {
+      priority: priorityQuestion,
+      driver: driverQuestion,
+      hasBlocker: hasBlockerQuestion,
+      blockerKind: blockerKindQuestion,
+    },
   });
 
   const { score: value, confidence, legend } = answers.priority;
@@ -92,9 +118,13 @@ async function judgeTask(task, currentContext) {
     level,
     levelLabel: legend[level],
     shouldDoNow: value >= NOW_THRESHOLD,
-    // 説明用。並び順の計算には使わない。
+    // 以下はすべて説明用。並び順の計算には一切使わない。
     driver: { key: answers.driver.choice, confidence: answers.driver.confidence },
-    blocker: { key: answers.blocker.choice, confidence: answers.blocker.confidence },
+    blocker: {
+      presence: answers.hasBlocker.noul,
+      key: answers.blockerKind.choice,
+      confidence: answers.blockerKind.confidence,
+    },
   };
 }
 

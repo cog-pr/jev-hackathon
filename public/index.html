@@ -560,6 +560,25 @@
         color: var(--color-muted-foreground);
       }
 
+      .reason-sub.strong {
+        color: var(--color-accent);
+        font-weight: var(--font-weight-bold);
+      }
+
+      /* 今はどれも取り組みにくい局面。煽らず、落ち着いた見た目にする。 */
+      .hero.stuck {
+        border-color: var(--color-border);
+        background: var(--color-muted);
+      }
+
+      .hero.stuck .eyebrow {
+        color: var(--color-muted-foreground);
+      }
+
+      .hero.stuck .chip {
+        border-color: var(--color-border);
+      }
+
       .card-reason {
         grid-column: 2;
         font-size: var(--font-size-xs);
@@ -883,6 +902,7 @@
 
       .eyebrow {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: var(--space-2);
         font-size: var(--font-size-sm);
@@ -1544,9 +1564,12 @@
         device: "必要なPC・端末が使えない",
         focus: "集中力を確保しにくい",
         location: "今いる場所が向いていない",
-        not_yet: "締切まで余裕がある",
         none: null, // 妨げがない場合は表示しない
       };
+
+      // hasBlocker（Noul）の閾値。実データを見て調整する前提の初期値であり、固定の正解ではない。
+      const BLOCKER_SHOW_THRESHOLD = 0.6; // これ未満なら妨げとして表示しない
+      const BLOCKER_STRONG_THRESHOLD = 0.8; // これ以上なら「今は難しい理由」として強く表示する
       const DAY_LABEL = ["日", "月", "火", "水", "木", "金", "土"];
 
       // 空き時間の上限。これ以上は「当面まとまった時間がある」として扱う。
@@ -1915,7 +1938,8 @@
               }
               ${
                 item.blocker
-                  ? `<div class="kv"><span>blocker（Choice）</span><code>${escapeHtml(item.blocker.key)} (${item.blocker.confidence.toFixed(2)})</code></div>`
+                  ? `<div class="kv"><span>hasBlocker（Noul）</span><code>${item.blocker.presence.toFixed(2)}</code></div>
+                     <div class="kv"><span>blockerKind（Choice）</span><code>${escapeHtml(item.blocker.key)} (${item.blocker.confidence.toFixed(2)})</code></div>`
                   : ""
               }
               ${rubric ? `<ol class="rubric" start="0">${rubric}</ol>` : ""}
@@ -1945,31 +1969,59 @@
           : `<span class="delta" aria-label="順位が${moved}つ下がりました">${icon("i-arrow-down")}${moved}</span>`;
       };
 
+      // driver は none のとき行ごと出さない（「特に理由はない」と書いても情報が増えないため）。
+      const driverLabelOf = (item) => (item.driver?.key === "none" ? null : DRIVER_LABEL[item.driver?.key] ?? null);
+
+      /**
+       * blocker を表示するかどうかは hasBlocker（Noul）で決める。
+       * blockerKind は「妨げがあるとすれば何か」を答える投機的な質問なので、
+       * 存在確率が閾値に届かないときは参照しない。
+       */
+      const blockerViewOf = (item) => {
+        const blocker = item.blocker;
+        if (!blocker || typeof blocker.presence !== "number") return null;
+        if (blocker.presence < BLOCKER_SHOW_THRESHOLD) return null;
+        const label = BLOCKER_LABEL[blocker.key];
+        if (!label) return null;
+        return { label, strong: blocker.presence >= BLOCKER_STRONG_THRESHOLD };
+      };
+
       // ヒーローカード用。「なぜこれなのか」を1行で示す。
       const reasonHtml = (item) => {
-        const driver = DRIVER_LABEL[item.driver?.key];
-        const blocker = BLOCKER_LABEL[item.blocker?.key];
+        const driver = driverLabelOf(item);
+        const blocker = blockerViewOf(item);
         if (!driver && !blocker) return "";
         return `
           <div class="reason">
             ${driver ? `<p class="reason-main">今これをやる理由：<b>${escapeHtml(driver)}</b></p>` : ""}
-            ${blocker ? `<p class="reason-sub">気になる点：${escapeHtml(blocker)}</p>` : ""}
+            ${
+              blocker
+                ? `<p class="reason-sub${blocker.strong ? " strong" : ""}">${
+                    blocker.strong ? "今は難しい理由" : "気になる点"
+                  }：${escapeHtml(blocker.label)}</p>`
+                : ""
+            }
           </div>`;
       };
 
       // 2位以下用。情報量を増やしすぎないよう短い1行にまとめる。
       const cardReasonHtml = (item) => {
-        const driver = DRIVER_LABEL[item.driver?.key];
-        const blocker = BLOCKER_LABEL[item.blocker?.key];
+        const driver = driverLabelOf(item);
+        const blocker = blockerViewOf(item);
         const parts = [];
         if (driver) parts.push(`理由：<b>${escapeHtml(driver)}</b>`);
-        if (blocker) parts.push(`気になる点：${escapeHtml(blocker)}`);
+        if (blocker) parts.push(`${blocker.strong ? "今は難しい" : "気になる点"}：${escapeHtml(blocker.label)}`);
         return parts.length === 0 ? "" : `<p class="card-reason">${parts.join(" ・ ")}</p>`;
       };
 
-      const heroHtml = (item, levels, scoreMax) => `
-        <article class="hero" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-accent)"}">
-          <p class="eyebrow">${icon("i-flame")}今、何やる？ <span class="visually-hidden">1位</span>${deltaHtml(item.task.title, 1)}</p>
+      const heroHtml = (item, levels, scoreMax) => {
+        // priority が閾値に届かない＝今はどれも取り組みにくい局面。無理に「これをやれ」と言わない。
+        const stuck = item.shouldDoNow === false;
+        return `
+        <article class="hero${stuck ? " stuck" : ""}" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-accent)"}">
+          <p class="eyebrow">${icon(stuck ? "i-alert" : "i-flame")}${
+            stuck ? "今は動きにくい状況です。あえてやるなら" : "今、何やる？"
+          } <span class="visually-hidden">1位</span>${deltaHtml(item.task.title, 1)}</p>
           <h3>${escapeHtml(item.task.title)}</h3>
           <div class="hero-meta">
             <span class="chip">${icon("i-calendar")}${escapeHtml(deadlineText(item.task.deadline))}</span>
@@ -1982,6 +2034,7 @@
           <button type="button" class="btn done-btn" id="heroDone">${icon("i-check")}これを終わらせた</button>
           ${jevDetailsHtml(item, levels, scoreMax)}
         </article>`;
+      };
 
       const cardHtml = (item, rank, levels, scoreMax, dim) => `
         <li class="card${dim ? " dim" : ""}" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-primary)"}">
