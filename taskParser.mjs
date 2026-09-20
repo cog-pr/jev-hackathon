@@ -184,21 +184,75 @@ export function extractDurationCandidates(text, maxCandidates) {
 
 const MAX_TITLE_LENGTH = 40;
 
+// 締切を表す定型表現。日付スパンを取り除いた後に残る接続表現を落とすために使う。
+const DEADLINE_MARKERS = /(締め?切|〆切|期限|必着)[のはがをに:：]?/g;
+const DEADLINE_CONNECTORS = /(までに|まで|迄に|迄)/g;
+const LEADING_JUNK = /^[\s、,。.・:：「」【】\-–—/]+/;
+const TRAILING_JUNK = /[\s、,。.・:：「」【】\-–—/]+$/;
+const LEADING_PARTICLE = /^(の|に|を|は|が|で|と|へ|も)+/;
+const TRAILING_PARTICLE = /(の|に|を|は|が|で|と|へ|も)+$/;
+const TRAILING_SUBMIT = /(を|の)?提出(する|します|してください)?$/;
+
+const firstSentence = (value) => {
+  const match = value.match(/^[^。.!?！？]+[。.!?！？]?/);
+  return (match ? match[0] : value).replace(/[。.!?！？]$/, "").trim();
+};
+
+const stripEdges = (value) =>
+  value
+    .replace(LEADING_JUNK, "")
+    .replace(TRAILING_JUNK, "")
+    .replace(LEADING_PARTICLE, "")
+    .replace(TRAILING_PARTICLE, "")
+    .trim();
+
+const truncateTitle = (value) =>
+  value.length > MAX_TITLE_LENGTH ? `${value.slice(0, MAX_TITLE_LENGTH - 1)}…` : value;
+
 /**
  * タイトルは生成せず、決定的なヒューリスティックだけで決める。
- * 最初の非空行を基本候補とし、句読点があればその最初の文に絞り、
- * それでも長すぎる場合だけ末尾を省略する。確認カードで必ず編集可能にする。
+ *
+ * 締切・所要時間は別フィールドとして構造化されるため、抽出済みの候補スパン
+ * （選ばれなかった日付も含む）と、その周辺に残る「までに」「締切の」などの
+ * 定型表現を取り除いてからタイトルを決める。
+ * 除去できる候補が一つもない場合は、従来どおり最初の文をそのまま使う。
+ * 結果が空になった場合も元の文へ戻すため、最悪でも従来の挙動に落ちる。
  */
-export function extractTitle(text) {
+export function extractTitle(text, removableSpans = []) {
   const trimmed = text.trim();
   if (!trimmed) return "名称未設定のタスク";
 
   const firstLine = trimmed.split(/\r?\n/).find((line) => line.trim().length > 0)?.trim() ?? trimmed;
-  const sentenceMatch = firstLine.match(/^[^。.!?！？]+[。.!?！？]?/);
-  let candidate = (sentenceMatch ? sentenceMatch[0] : firstLine).replace(/[。.!?！？]$/, "").trim();
-  if (!candidate) candidate = firstLine;
-  if (candidate.length > MAX_TITLE_LENGTH) {
-    candidate = `${candidate.slice(0, MAX_TITLE_LENGTH - 1)}…`;
+  const fallback = firstSentence(firstLine) || firstLine;
+  if (removableSpans.length === 0) return truncateTitle(fallback) || "名称未設定のタスク";
+
+  // 長いスパンから消さないと、短いスパンが部分的に食い合う（例：「9/25 18:00」と「18:00」）。
+  let cleaned = firstLine;
+  for (const span of [...removableSpans].sort((a, b) => b.length - a.length)) {
+    if (span) cleaned = cleaned.split(span).join("");
   }
-  return candidate || "名称未設定のタスク";
+  cleaned = cleaned.replace(DEADLINE_MARKERS, "").replace(DEADLINE_CONNECTORS, "");
+
+  // スパンを抜いた跡で文が分断されるため、読点で区切って最も情報量の多い断片を使う。
+  const segment =
+    firstSentence(cleaned)
+      .split(/[、,]/)
+      .map((part) => stripEdges(part))
+      .sort((a, b) => b.length - a.length)[0] ?? "";
+
+  const title = stripEdges(segment.replace(TRAILING_SUBMIT, ""));
+  return truncateTitle(title || fallback) || "名称未設定のタスク";
+}
+
+/**
+ * ローカルタイムゾーンのオフセット付きISO文字列。
+ * Jevに渡す `now` をUTCにすると、日本時間の深夜〜早朝で日付が1日ずれて見えるため、
+ * 日付解決と同じローカル基準の表記で渡す。
+ */
+export function toLocalISO(date) {
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const abs = Math.abs(offsetMinutes);
+  const clock = `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${clock}${sign}${pad2(Math.floor(abs / 60))}:${pad2(abs % 60)}`;
 }

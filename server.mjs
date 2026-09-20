@@ -2,7 +2,7 @@
 // APIキーはこのプロセス内だけで使い、ブラウザには渡さない。
 import express from "express";
 import { choice, score, TypeSafeClient } from "@typesafe-ai/sdk";
-import { extractDeadlineCandidates, extractDurationCandidates, extractTitle } from "./taskParser.mjs";
+import { extractDeadlineCandidates, extractDurationCandidates, extractTitle, toLocalISO } from "./taskParser.mjs";
 
 if (!process.env.TYPESAFE_API_KEY) {
   console.error("TYPESAFE_API_KEY が設定されていません。.env を確認してください。");
@@ -70,9 +70,14 @@ const MAX_DURATION_CANDIDATES = 4;
  * タイトルと補足は決定的なコード処理のみで決め、Jevには渡さない。
  */
 async function parseTaskText(text, now) {
-  const title = extractTitle(text);
   const deadlineExtraction = extractDeadlineCandidates(text, now, MAX_DEADLINE_CANDIDATES);
   const durationExtraction = extractDurationCandidates(text, MAX_DURATION_CANDIDATES);
+
+  // 締切・所要時間は別フィールドになるため、その原文スパンはタイトルから取り除く。
+  const title = extractTitle(text, [
+    ...deadlineExtraction.candidates.map((c) => c.text),
+    ...durationExtraction.candidates.map((c) => c.text),
+  ]);
 
   const questions = {};
   if (deadlineExtraction.candidates.length > 0) {
@@ -112,7 +117,7 @@ async function parseTaskText(text, now) {
   }
 
   const { answers } = await client.systemOne({
-    state: { rawText: text, now: now.toISOString() },
+    state: { rawText: text, now: toLocalISO(now) },
     questions,
   });
 
