@@ -38,10 +38,48 @@ const priorityQuestion = score(
   PRIORITY_LEVELS,
 );
 
+// なぜ今このタスクを優先するのか。ランキングには一切使わず、説明のためだけに使う。
+const DRIVER_CRITERIA = {
+  deadline: "締切が近く、時間的にこれ以上後回しにしにくい",
+  importance: "成績・評価・仕事など、結果への影響が大きい",
+  time_fit: "今の空き時間や次の予定までの時間に、この作業が収まりやすい",
+  context_fit: "今いる場所・使える端末・集中状態が、この作業に向いている",
+  none: "今このタスクを優先すべき強い理由は見当たらない",
+};
+
+// なぜ今このタスクに取り組みにくいのか。こちらもランキングには使わない。
+const BLOCKER_CRITERIA = {
+  time: "使える時間が短く、この作業を進めるには足りない",
+  device: "この作業に必要なPCや端末・道具が、今は使えない",
+  focus: "この作業に必要な集中力を、今は確保しにくい",
+  location: "今いる場所が、この作業をするのに向いていない",
+  not_yet: "着手を妨げる事情はないが、締切まで余裕があり今やる必要性が低い",
+  none: "今の状況で、この作業に取りかかるのを妨げるものは特にない",
+};
+
+const driverQuestion = choice(
+  {
+    judgment:
+      "`currentContext` の状況にいるユーザーが今この `task` に取り組むとしたら、その最大の理由は何か",
+    exclusion: "優先すべきかどうかの判断ではなく、最も当てはまる理由を1つだけ選ぶ",
+  },
+  DRIVER_CRITERIA,
+);
+
+const blockerQuestion = choice(
+  {
+    judgment:
+      "`currentContext` の状況にいるユーザーが今この `task` に着手しにくいとしたら、その最大の要因は何か",
+    exclusion: "タスク自体の難しさではなく、今この状況だからこそ生じている要因を1つだけ選ぶ",
+  },
+  BLOCKER_CRITERIA,
+);
+
 async function judgeTask(task, currentContext) {
+  // 3つの質問は互いに独立しているため、同じ状態に対して1回の呼び出しでまとめて尋ねる。
   const { answers } = await client.systemOne({
     state: { currentContext, task },
-    questions: { priority: priorityQuestion },
+    questions: { priority: priorityQuestion, driver: driverQuestion, blocker: blockerQuestion },
   });
 
   const { score: value, confidence, legend } = answers.priority;
@@ -54,6 +92,9 @@ async function judgeTask(task, currentContext) {
     level,
     levelLabel: legend[level],
     shouldDoNow: value >= NOW_THRESHOLD,
+    // 説明用。並び順の計算には使わない。
+    driver: { key: answers.driver.choice, confidence: answers.driver.confidence },
+    blocker: { key: answers.blocker.choice, confidence: answers.blocker.confidence },
   };
 }
 

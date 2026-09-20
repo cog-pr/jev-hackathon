@@ -539,6 +539,39 @@
         font-weight: var(--font-weight-bold);
       }
 
+      .reason {
+        margin-top: var(--space-3);
+        display: grid;
+        gap: var(--space-1);
+      }
+
+      .reason-main {
+        font-size: var(--font-size-base);
+        color: var(--color-foreground);
+      }
+
+      .reason-main b {
+        font-weight: var(--font-weight-bold);
+        color: var(--color-accent);
+      }
+
+      .reason-sub {
+        font-size: var(--font-size-sm);
+        color: var(--color-muted-foreground);
+      }
+
+      .card-reason {
+        grid-column: 2;
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        overflow-wrap: anywhere;
+      }
+
+      .card-reason b {
+        color: var(--color-foreground);
+        font-weight: var(--font-weight-semibold);
+      }
+
       .draft-raw {
         margin-top: var(--space-3);
         white-space: pre-wrap;
@@ -1497,6 +1530,23 @@
       const FOCUS_LABEL = { high: "高い", medium: "ふつう", low: "低い" };
       const PLACE_ICON = { 自宅: "i-house", 電車の中: "i-train", 大学: "i-building", カフェ: "i-coffee" };
       const LEVEL_TOKEN = ["var(--level-0)", "var(--level-1)", "var(--level-2)", "var(--level-3)"];
+
+      // Jevが返す Choice のキーを、ユーザー向けの固定コピーに変換する。
+      const DRIVER_LABEL = {
+        deadline: "締切が近い",
+        importance: "結果への影響が大きい",
+        time_fit: "今の空き時間に収まりやすい",
+        context_fit: "今の場所・端末・集中状態に合っている",
+        none: "特に強い理由はない",
+      };
+      const BLOCKER_LABEL = {
+        time: "使える時間が足りない",
+        device: "必要なPC・端末が使えない",
+        focus: "集中力を確保しにくい",
+        location: "今いる場所が向いていない",
+        not_yet: "締切まで余裕がある",
+        none: null, // 妨げがない場合は表示しない
+      };
       const DAY_LABEL = ["日", "月", "火", "水", "木", "金", "土"];
 
       // 空き時間の上限。これ以上は「当面まとまった時間がある」として扱う。
@@ -1858,6 +1908,16 @@
               <div class="kv"><span>score（今やるべき度）</span><code>${item.score.toFixed(2)} / ${scoreMax}</code></div>
               <div class="kv"><span>confidence（判定の確信度）</span><code>${item.confidence.toFixed(2)}</code></div>
               <div class="kv"><span>該当レベル</span><code>${item.level}</code></div>
+              ${
+                item.driver
+                  ? `<div class="kv"><span>driver（Choice）</span><code>${escapeHtml(item.driver.key)} (${item.driver.confidence.toFixed(2)})</code></div>`
+                  : ""
+              }
+              ${
+                item.blocker
+                  ? `<div class="kv"><span>blocker（Choice）</span><code>${escapeHtml(item.blocker.key)} (${item.blocker.confidence.toFixed(2)})</code></div>`
+                  : ""
+              }
               ${rubric ? `<ol class="rubric" start="0">${rubric}</ol>` : ""}
             </div>
           </details>`;
@@ -1885,6 +1945,28 @@
           : `<span class="delta" aria-label="順位が${moved}つ下がりました">${icon("i-arrow-down")}${moved}</span>`;
       };
 
+      // ヒーローカード用。「なぜこれなのか」を1行で示す。
+      const reasonHtml = (item) => {
+        const driver = DRIVER_LABEL[item.driver?.key];
+        const blocker = BLOCKER_LABEL[item.blocker?.key];
+        if (!driver && !blocker) return "";
+        return `
+          <div class="reason">
+            ${driver ? `<p class="reason-main">今これをやる理由：<b>${escapeHtml(driver)}</b></p>` : ""}
+            ${blocker ? `<p class="reason-sub">気になる点：${escapeHtml(blocker)}</p>` : ""}
+          </div>`;
+      };
+
+      // 2位以下用。情報量を増やしすぎないよう短い1行にまとめる。
+      const cardReasonHtml = (item) => {
+        const driver = DRIVER_LABEL[item.driver?.key];
+        const blocker = BLOCKER_LABEL[item.blocker?.key];
+        const parts = [];
+        if (driver) parts.push(`理由：<b>${escapeHtml(driver)}</b>`);
+        if (blocker) parts.push(`気になる点：${escapeHtml(blocker)}`);
+        return parts.length === 0 ? "" : `<p class="card-reason">${parts.join(" ・ ")}</p>`;
+      };
+
       const heroHtml = (item, levels, scoreMax) => `
         <article class="hero" style="--level:${LEVEL_TOKEN[item.level] ?? "var(--color-accent)"}">
           <p class="eyebrow">${icon("i-flame")}今、何やる？ <span class="visually-hidden">1位</span>${deltaHtml(item.task.title, 1)}</p>
@@ -1896,6 +1978,7 @@
           </div>
           ${meterHtml(item, scoreMax)}
           <p class="verdict">「${escapeHtml(item.levelLabel)}」</p>
+          ${reasonHtml(item)}
           <button type="button" class="btn done-btn" id="heroDone">${icon("i-check")}これを終わらせた</button>
           ${jevDetailsHtml(item, levels, scoreMax)}
         </article>`;
@@ -1909,6 +1992,7 @@
           </div>
           <p class="card-meta">${escapeHtml(taskMetaText(item.task))}</p>
           <p class="card-level">${escapeHtml(item.levelLabel)}</p>
+          ${cardReasonHtml(item)}
           ${meterHtml(item, scoreMax)}
           ${jevDetailsHtml(item, levels, scoreMax)}
         </li>`;
