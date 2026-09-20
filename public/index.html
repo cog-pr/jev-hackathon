@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>今、何やる？</title>
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --card: #ffffff;
+        --line: #e2e2e7;
+        --text: #1c1c1e;
+        --muted: #6b6b73;
+        --accent: #ff6b35;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px 64px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        display: grid;
+        gap: 20px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      h1 + p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      label {
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      input,
+      select,
+      textarea {
+        font: inherit;
+        font-size: 14px;
+        padding: 7px 9px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        color: inherit;
+        width: 100%;
+      }
+      button {
+        font: inherit;
+        font-size: 14px;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #f0f0f3;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+      button.primary:hover {
+        opacity: 0.9;
+      }
+      button.primary:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 12px;
+      }
+      .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text);
+      }
+      .checkbox input {
+        width: auto;
+      }
+      ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      .task-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .task-item small {
+        color: var(--muted);
+      }
+      .group-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        margin: 4px 0 8px;
+      }
+      .result {
+        display: grid;
+        gap: 4px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+      .result.top {
+        border-color: var(--accent);
+        border-width: 2px;
+        background: #fff8f4;
+      }
+      .result-head {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .rank {
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .result.top .title {
+        font-size: 19px;
+      }
+      .meta,
+      .judgement {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .judgement code {
+        background: #f0f0f3;
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      .level {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .later .level {
+        color: var(--muted);
+      }
+      .status {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .error {
+        color: #c0392b;
+      }
+      hr {
+        border: none;
+        border-top: 1px dashed var(--line);
+        margin: 18px 0 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>今、何やる？</h1>
+        <p>Todoを管理するのではなく、次にやることを決めてくれる学生向けタスクアプリ</p>
+      </header>
+
+      <section>
+        <h2>今の状況</h2>
+        <div class="grid">
+          <label>現在時刻<input type="datetime-local" id="currentTime" /></label>
+          <label>使える時間（分）<input type="number" id="availableMinutes" value="180" min="5" step="5" /></label>
+          <label>
+            集中力
+            <select id="focus">
+              <option value="high">高い</option>
+              <option value="medium">ふつう</option>
+              <option value="low">低い</option>
+            </select>
+          </label>
+          <label>
+            場所
+            <select id="location">
+              <option value="自宅">自宅</option>
+              <option value="電車の中">電車の中</option>
+              <option value="大学">大学</option>
+              <option value="カフェ">カフェ</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <span class="checkbox"><input type="checkbox" id="hasPC" checked />PCが使える</span>
+          <button type="button" id="presetHome">自宅・3時間・PCあり</button>
+          <button type="button" id="presetTrain">電車・30分・PCなし</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>タスクを追加</h2>
+        <form id="taskForm">
+          <div class="grid">
+            <label>タスク名<input id="title" required placeholder="数学レポート" /></label>
+            <label>締切<input type="datetime-local" id="deadline" /></label>
+            <label>所要時間（分）<input type="number" id="estimatedMinutes" min="5" step="5" placeholder="120" /></label>
+            <label>補足<input id="note" placeholder="成績の30%を占める" /></label>
+          </div>
+          <div class="row">
+            <button type="submit" class="primary">追加する</button>
+            <button type="button" id="loadDemo">デモ用タスクを読み込む</button>
+            <button type="button" id="clearTasks">全て削除</button>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h2>登録済みタスク（<span id="taskCount">0</span>件）</h2>
+        <ul id="taskList"></ul>
+        <div class="row">
+          <button type="button" class="primary" id="rankButton">この状況で「今やる順」を判定する</button>
+          <span class="status" id="status"></span>
+        </div>
+      </section>
+
+      <section id="resultSection" hidden>
+        <h2>判定結果</h2>
+        <div id="results"></div>
+      </section>
+    </main>
+
+    <script>
+      const FOCUS_LABEL = { high: "高い", medium: "ふつう", low: "低い" };
+      const el = (id) => document.getElementById(id);
+      let tasks = [];
+
+      const toLocalInput = (date) => {
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      };
+
+      const addDays = (days, hours, minutes) => {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        d.setHours(hours, minutes, 0, 0);
+        return toLocalInput(d);
+      };
+
+      const formatDeadline = (value) => {
+        if (!value) return "締切なし";
+        const d = new Date(value);
+        const days = Math.ceil((d - new Date()) / 86400000);
+        const when = days <= 0 ? "今日" : days === 1 ? "明日" : `${days}日後`;
+        return `${when} ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      };
+
+      const readContext = () => ({
+        currentTime: el("currentTime").value,
+        availableMinutes: Number(el("availableMinutes").value),
+        focus: FOCUS_LABEL[el("focus").value],
+        location: el("location").value,
+        hasPC: el("hasPC").checked,
+      });
+
+      const renderTasks = () => {
+        el("taskCount").textContent = tasks.length;
+        el("taskList").innerHTML = "";
+        tasks.forEach((task, index) => {
+          const li = document.createElement("li");
+          li.className = "task-item";
+          const info = document.createElement("div");
+          info.innerHTML = `<div>${task.title}</div><small>${formatDeadline(task.deadline)}${task.estimatedMinutes ? ` / 約${task.estimatedMinutes}分` : ""}${task.note ? ` / ${task.note}` : ""}</small>`;
+          const remove = document.createElement("button");
+          remove.textContent = "削除";
+          remove.onclick = () => {
+            tasks.splice(index, 1);
+            renderTasks();
+          };
+          li.append(info, remove);
+          el("taskList").append(li);
+        });
+      };
+
+      const renderResults = (results) => {
+        const container = el("results");
+        container.innerHTML = "";
+
+        const renderGroup = (label, items, offset, style) => {
+          if (items.length === 0) return;
+          const heading = document.createElement("div");
+          heading.className = "group-label";
+          heading.textContent = label;
+          container.append(heading);
+
+          const list = document.createElement("ul");
+          items.forEach((item, i) => {
+            const rank = offset + i + 1;
+            const li = document.createElement("li");
+            li.className = `result ${style}`;
+            li.innerHTML = `
+              <div class="result-head">
+                <span class="rank">${rank}.</span>
+                <span class="title">${item.task.title}</span>
+              </div>
+              <div class="meta">${formatDeadline(item.task.deadline)}${item.task.estimatedMinutes ? ` / 約${item.task.estimatedMinutes}分` : ""}${item.task.note ? ` / ${item.task.note}` : ""}</div>
+              <div class="level">今やるべき度：${item.levelLabel}</div>
+              <div class="judgement">Jevの判定 <code>score=${item.score.toFixed(2)} / 3</code> <code>confidence=${item.confidence.toFixed(2)}</code></div>
+            `;
+            list.append(li);
+          });
+          container.append(list);
+        };
+
+        // 1位は常に最上部へ。残りはJevのスコアが閾値以上かで2グループに分ける。
+        const [first, ...rest] = results;
+        renderGroup(first.shouldDoNow ? "🔥 今からやる" : "今やるなら これ", [first], 0, "top");
+        renderGroup("次にやる", rest.filter((r) => r.shouldDoNow), 1, "");
+        const later = rest.filter((r) => !r.shouldDoNow);
+        if (later.length > 0) container.append(document.createElement("hr"));
+        renderGroup("あとでOK", later, results.length - later.length, "later");
+        el("resultSection").hidden = false;
+      };
+
+      el("taskForm").onsubmit = (event) => {
+        event.preventDefault();
+        tasks.push({
+          title: el("title").value.trim(),
+          deadline: el("deadline").value || null,
+          estimatedMinutes: Number(el("estimatedMinutes").value) || null,
+          note: el("note").value.trim() || null,
+        });
+        event.target.reset();
+        renderTasks();
+      };
+
+      el("loadDemo").onclick = () => {
+        tasks = [
+          { title: "数学レポート", deadline: addDays(1, 23, 59), estimatedMinutes: 120, note: "成績の30%を占める" },
+          { title: "就活ES", deadline: addDays(3, 18, 0), estimatedMinutes: 60, note: "志望度が高い企業" },
+          { title: "IT資格の勉強", deadline: addDays(14, 10, 0), estimatedMinutes: 60, note: "2週間後に試験" },
+          { title: "部屋の掃除", deadline: null, estimatedMinutes: 30, note: null },
+        ];
+        renderTasks();
+      };
+
+      el("clearTasks").onclick = () => {
+        tasks = [];
+        renderTasks();
+        el("resultSection").hidden = true;
+      };
+
+      const applyPreset = ({ minutes, focus, location, hasPC }) => {
+        el("availableMinutes").value = minutes;
+        el("focus").value = focus;
+        el("location").value = location;
+        el("hasPC").checked = hasPC;
+      };
+
+      el("presetHome").onclick = () =>
+        applyPreset({ minutes: 180, focus: "high", location: "自宅", hasPC: true });
+      el("presetTrain").onclick = () =>
+        applyPreset({ minutes: 30, focus: "low", location: "電車の中", hasPC: false });
+
+      el("rankButton").onclick = async () => {
+        if (tasks.length === 0) {
+          el("status").textContent = "タスクを追加してください。";
+          return;
+        }
+        el("rankButton").disabled = true;
+        el("status").className = "status";
+        el("status").textContent = "Jevが判定中…";
+        try {
+          const response = await fetch("/api/rank", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ context: readContext(), tasks }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error ?? "判定に失敗しました。");
+          renderResults(data.results);
+          el("status").textContent = `判定完了（${data.results.length}件）`;
+        } catch (error) {
+          el("status").className = "status error";
+          el("status").textContent = error.message;
+        } finally {
+          el("rankButton").disabled = false;
+        }
+      };
+
+      el("currentTime").value = toLocalInput(new Date());
+      renderTasks();
+    </script>
+  </body>
+</html>

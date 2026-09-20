@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file=.env index.mjs"
+    "dev": "node --env-file=.env server.mjs",
+    "check-api": "node --env-file=.env index.mjs"
   },
   "dependencies": {
-    "@typesafe-ai/sdk": "^0.6.0"
+    "@typesafe-ai/sdk": "^0.6.0",
+    "express": "^5.1.0"
   }
 }
