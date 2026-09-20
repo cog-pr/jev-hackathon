@@ -1,7 +1,8 @@
 // 「今、何から手をつけるべきか」を Jev に判定させるサーバー。
 // APIキーはこのプロセス内だけで使い、ブラウザには渡さない。
 import express from "express";
-import { score, TypeSafeClient } from "@typesafe-ai/sdk";
+import { choice, score, TypeSafeClient } from "@typesafe-ai/sdk";
+import { extractDeadlineCandidates, extractDurationCandidates, extractTitle } from "./taskParser.mjs";
 
 if (!process.env.TYPESAFE_API_KEY) {
   console.error("TYPESAFE_API_KEY が設定されていません。.env を確認してください。");
@@ -56,9 +57,112 @@ async function judgeTask(task, currentContext) {
   };
 }
 
+// 自然文タスク入力の上限。極端に長い文章や候補過多で処理が肥大化しないようにする。
+const MAX_TASK_TEXT_LENGTH = 500;
+const MAX_DEADLINE_CANDIDATES = 6;
+const MAX_DURATION_CANDIDATES = 4;
+
+/**
+ * 貼り付けられた自然文から Task を構造化する。
+ *
+ * ここでの Jev の役割は「コードが見つけた候補の中から選ぶ」ことだけであり、
+ * 文中に存在しない日付・時間を作文することはできない（Choiceは候補にない値を返せない）。
+ * タイトルと補足は決定的なコード処理のみで決め、Jevには渡さない。
+ */
+async function parseTaskText(text, now) {
+  const title = extractTitle(text);
+  const deadlineExtraction = extractDeadlineCandidates(text, now, MAX_DEADLINE_CANDIDATES);
+  const durationExtraction = extractDurationCandidates(text, MAX_DURATION_CANDIDATES);
+
+  const questions = {};
+  if (deadlineExtraction.candidates.length > 0) {
+    const criteria = { none: "文章中に締切の記載がない、またはどの候補も締切を表していない" };
+    deadlineExtraction.candidates.forEach((c, i) => {
+      criteria[`d${i}`] = c.text;
+    });
+    questions.deadline = choice(
+      "`rawText` の中で、これを提出・完了しなければならない締切を表しているのはどれですか。`now` を基準に、配布日・実施日など締切以外の日付とは区別してください。",
+      criteria,
+    );
+  }
+  if (durationExtraction.candidates.length > 0) {
+    const criteria = { none: "所要時間の記載がない、またはどの候補も所要時間を表していない" };
+    durationExtraction.candidates.forEach((c, i) => {
+      criteria[`u${i}`] = c.text;
+    });
+    questions.duration = choice(
+      "`rawText` の中で、この作業にかかる時間の見積もりを表しているのはどれですか。",
+      criteria,
+    );
+  }
+
+  const result = {
+    title,
+    deadline: null,
+    estimatedMinutes: null,
+    note: text,
+    deadlineSource: null,
+    durationSource: null,
+    confidence: { deadline: null, duration: null },
+    truncated: { deadline: deadlineExtraction.truncated, duration: durationExtraction.truncated },
+  };
+
+  if (Object.keys(questions).length === 0) {
+    return result; // 候補が一つもなければ Jev を呼ばない
+  }
+
+  const { answers } = await client.systemOne({
+    state: { rawText: text, now: now.toISOString() },
+    questions,
+  });
+
+  if (answers.deadline) {
+    result.confidence.deadline = answers.deadline.confidence;
+    if (answers.deadline.choice !== "none") {
+      const picked = deadlineExtraction.candidates[Number(answers.deadline.choice.slice(1))];
+      result.deadline = picked.iso;
+      result.deadlineSource = picked.text;
+    }
+  }
+  if (answers.duration) {
+    result.confidence.duration = answers.duration.confidence;
+    if (answers.duration.choice !== "none") {
+      const picked = durationExtraction.candidates[Number(answers.duration.choice.slice(1))];
+      result.estimatedMinutes = picked.minutes;
+      result.durationSource = picked.text;
+    }
+  }
+
+  return result;
+}
+
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static("public"));
+
+app.post("/api/parse-task", async (req, res) => {
+  const raw = req.body?.text;
+  if (typeof raw !== "string" || raw.trim().length === 0) {
+    res.status(400).json({ error: "テキストを入力してください。" });
+    return;
+  }
+
+  const text = raw.trim();
+  if (text.length > MAX_TASK_TEXT_LENGTH) {
+    res.status(400).json({
+      error: `文章が長すぎます（${MAX_TASK_TEXT_LENGTH}文字以内にしてください）。複数の課題が含まれている場合は、1つずつに分けて貼り付けてください。`,
+    });
+    return;
+  }
+
+  try {
+    const result = await parseTaskText(text, new Date());
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(502).json({ error: "Jev API の呼び出しに失敗しました。" });
+  }
+});
 
 app.post("/api/rank", async (req, res) => {
   const { context, tasks } = req.body ?? {};

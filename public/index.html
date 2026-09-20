@@ -445,7 +445,8 @@
       }
 
       input,
-      select {
+      select,
+      textarea {
         font: inherit;
         font-size: var(--font-size-sm);
         width: 100%;
@@ -459,7 +460,8 @@
       }
 
       input:hover,
-      select:hover {
+      select:hover,
+      textarea:hover {
         border-color: var(--color-primary);
       }
 
@@ -472,6 +474,81 @@
       .title-input::placeholder {
         font-weight: 400;
         color: var(--color-muted-foreground);
+      }
+
+      textarea.raw-input {
+        font-size: var(--font-size-base);
+        line-height: var(--leading-normal);
+        padding: var(--space-3);
+        min-height: 96px;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      textarea.raw-input::placeholder {
+        color: var(--color-muted-foreground);
+      }
+
+      .char-count {
+        margin-top: var(--space-1);
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        text-align: right;
+      }
+
+      .char-count.near-limit {
+        color: var(--color-accent);
+        font-weight: var(--font-weight-bold);
+      }
+
+      .draft-card {
+        margin-top: var(--space-4);
+        padding: var(--card-padding);
+        border: var(--border-2) solid var(--color-primary);
+        border-radius: var(--radius-md);
+        background: var(--color-primary-surface);
+      }
+
+      .draft-head {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-primary);
+        margin-bottom: var(--space-3);
+      }
+
+      .draft-source {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        margin-top: var(--space-1);
+      }
+
+      .draft-source b {
+        color: var(--color-foreground);
+        font-weight: var(--font-weight-semibold);
+      }
+
+      .low-confidence {
+        color: var(--color-accent);
+        font-weight: var(--font-weight-bold);
+      }
+
+      .draft-raw {
+        margin-top: var(--space-3);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: var(--font-size-xs);
+        color: var(--color-muted-foreground);
+        padding: var(--space-2) var(--space-3);
+        background: var(--color-card);
+        border-radius: var(--radius-sm);
+        border: var(--border-1) solid var(--color-border);
       }
 
       .switch {
@@ -1347,28 +1424,47 @@
               <h2 id="task-heading"><span class="step">②</span> やることリスト</h2>
               <span class="count"><span id="taskCount">0</span> 件</span>
             </div>
-            <p class="panel-sub">まずはタスク名だけでOK。詳しく書くほど判定の精度が上がります。</p>
+            <p class="panel-sub">課題の連絡やメールをそのまま貼り付けるだけで、Jevが締切と所要時間を読み取ります。</p>
 
-            <form id="taskForm" autocomplete="off">
-              <label for="title">やること <span class="req">*必須</span>
-                <input class="title-input" id="title" required placeholder="例：数学レポート" />
+            <form id="parseForm" autocomplete="off">
+              <label for="rawText">やることを貼り付ける・書く
+                <textarea
+                  class="raw-input"
+                  id="rawText"
+                  rows="3"
+                  maxlength="500"
+                  placeholder="例：明後日23:59までに機械学習のレポートを提出。成績の30%を占める。2時間くらいかかりそう。"
+                ></textarea>
               </label>
-              <details class="tweak">
-                <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>締切・所要時間・補足を追加する</summary>
-                <div class="tweak-body">
-                  <div class="fields">
-                    <label for="deadline">締切<input type="datetime-local" id="deadline" /></label>
-                    <label for="estimatedMinutes">所要時間（分）<input type="number" id="estimatedMinutes" min="5" step="5" placeholder="120" /></label>
-                  </div>
-                  <label for="note" style="margin-top: var(--space-3)">補足<input id="note" placeholder="成績の30%を占める など" /></label>
-                </div>
-              </details>
+              <p class="char-count" id="rawTextCount">0 / 500文字</p>
+              <p class="status error" id="parseError" role="status" aria-live="polite"></p>
               <div class="actions">
-                <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>追加</button>
+                <button type="submit" class="btn btn-primary" id="parseButton"><svg class="icon" aria-hidden="true"><use href="#i-sparkle" /></svg>Taskにする</button>
                 <button type="button" class="btn btn-quiet" id="loadDemo">デモ用タスクを読み込む</button>
                 <button type="button" class="btn btn-quiet" id="clearTasks">全て削除</button>
               </div>
             </form>
+
+            <div id="draftCard"></div>
+
+            <details class="tweak">
+              <summary><svg class="icon" aria-hidden="true"><use href="#i-caret" /></svg>すべて手動で入力する</summary>
+              <div class="tweak-body">
+                <form id="taskForm" autocomplete="off">
+                  <label for="title">タスク名
+                    <input class="title-input" id="title" required placeholder="例：数学レポート" />
+                  </label>
+                  <div class="fields" style="margin-top: var(--space-3)">
+                    <label for="deadline">締切<input type="datetime-local" id="deadline" /></label>
+                    <label for="estimatedMinutes">所要時間（分）<input type="number" id="estimatedMinutes" min="5" step="5" placeholder="120" /></label>
+                  </div>
+                  <label for="note" style="margin-top: var(--space-3)">補足<input id="note" placeholder="成績の30%を占める など" /></label>
+                  <div class="actions">
+                    <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>この内容で追加</button>
+                  </div>
+                </form>
+              </div>
+            </details>
 
             <ul class="task-list" id="taskList"></ul>
             <p class="empty" id="taskEmpty">まだタスクがありません。「デモ用タスクを読み込む」が手早いです。</p>
@@ -1931,6 +2027,117 @@
       };
 
       /* ============================================================
+         自然文からのタスク構造化（貼り付け → 確認カード → 追加）
+         ============================================================ */
+      const MAX_RAW_TEXT_LENGTH = 500;
+      const LOW_CONFIDENCE = 0.5;
+      let draft = null; // /api/parse-task の結果。確認カードで編集し、確定時にtasksへ積む
+
+      const confidenceBadge = (value) =>
+        typeof value === "number" && value < LOW_CONFIDENCE
+          ? `<span class="low-confidence">（確信度が低いので確認してください）</span>`
+          : "";
+
+      const closeDraftCard = () => {
+        draft = null;
+        el("draftCard").innerHTML = "";
+      };
+
+      const renderDraftCard = (result, sourceText) => {
+        draft = result;
+        const warn =
+          result.truncated?.deadline || result.truncated?.duration
+            ? `<p class="notice warn" style="margin-bottom: var(--space-3)">${icon("i-alert")}候補が多く見つかったため、代表的なものだけを確認しています。複数の課題が含まれている場合は分けて貼り付けてください。</p>`
+            : "";
+
+        el("draftCard").innerHTML = `
+          <div class="draft-card">
+            <p class="draft-head">${icon("i-sparkle")}Jevが読み取りました。内容を確認してください</p>
+            ${warn}
+            <div class="fields">
+              <label for="draftTitle">タスク名<input id="draftTitle" value="${escapeHtml(result.title)}" /></label>
+              <label for="draftDeadline">締切<input type="datetime-local" id="draftDeadline" value="${escapeHtml(result.deadline ?? "")}" /></label>
+              <label for="draftMinutes">所要時間（分）<input type="number" id="draftMinutes" min="5" step="5" value="${result.estimatedMinutes ?? ""}" /></label>
+            </div>
+            <div class="draft-source">
+              ${
+                result.deadlineSource
+                  ? `<span>締切としてJevが選択：<b>「${escapeHtml(result.deadlineSource)}」</b>${confidenceBadge(result.confidence?.deadline)}</span>`
+                  : `<span>締切は文章から検出されませんでした（必要なら手動で入力してください）</span>`
+              }
+            </div>
+            <div class="draft-source">
+              ${
+                result.durationSource
+                  ? `<span>所要時間としてJevが選択：<b>「${escapeHtml(result.durationSource)}」</b>${confidenceBadge(result.confidence?.duration)}</span>`
+                  : `<span>所要時間は文章から検出されませんでした（必要なら手動で入力してください）</span>`
+              }
+            </div>
+            <details class="tweak">
+              <summary>${icon("i-caret")}原文を見る</summary>
+              <div class="tweak-body"><p class="draft-raw">${escapeHtml(sourceText)}</p></div>
+            </details>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="confirmDraft">${icon("i-check")}Taskに追加</button>
+              <button type="button" class="btn btn-quiet" id="cancelDraft">書き直す</button>
+            </div>
+          </div>`;
+
+        el("confirmDraft").onclick = () => {
+          tasks.push({
+            id: uid(),
+            title: el("draftTitle").value.trim() || "名称未設定のタスク",
+            deadline: el("draftDeadline").value || null,
+            estimatedMinutes: Number(el("draftMinutes").value) || null,
+            note: draft.note,
+          });
+          el("rawText").value = "";
+          updateRawTextCount();
+          closeDraftCard();
+          persist();
+          renderTasks();
+          requestJudge("タスクが増えた");
+        };
+        el("cancelDraft").onclick = closeDraftCard;
+      };
+
+      const updateRawTextCount = () => {
+        const len = el("rawText").value.length;
+        const counter = el("rawTextCount");
+        counter.textContent = `${len} / ${MAX_RAW_TEXT_LENGTH}文字`;
+        counter.className = len > MAX_RAW_TEXT_LENGTH * 0.9 ? "char-count near-limit" : "char-count";
+      };
+      el("rawText").addEventListener("input", updateRawTextCount);
+      updateRawTextCount();
+
+      el("parseForm").onsubmit = async (event) => {
+        event.preventDefault();
+        const text = el("rawText").value.trim();
+        el("parseError").textContent = "";
+        if (!text) return;
+
+        closeDraftCard();
+        const button = el("parseButton");
+        button.disabled = true;
+        button.textContent = "Jevが読み取っています…";
+        try {
+          const response = await fetch("/api/parse-task", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error ?? "読み取りに失敗しました");
+          renderDraftCard(data, text);
+        } catch (error) {
+          el("parseError").textContent = error.message;
+        } finally {
+          button.disabled = false;
+          button.textContent = "Taskにする";
+        }
+      };
+
+      /* ============================================================
          イベント
          ============================================================ */
       el("taskForm").onsubmit = (event) => {
@@ -1943,7 +2150,6 @@
           note: el("note").value.trim() || null,
         });
         event.target.reset();
-        el("title").focus();
         persist();
         renderTasks();
         requestJudge("タスクが増えた");
